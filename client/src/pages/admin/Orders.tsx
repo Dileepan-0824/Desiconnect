@@ -320,10 +320,10 @@ export default function AdminOrders() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Order ID</TableHead>
-                      <TableHead>Customer</TableHead>
                       <TableHead>Date</TableHead>
                       <TableHead>Total</TableHead>
                       <TableHead>Seller</TableHead>
+                      <TableHead>Tracking</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -331,14 +331,20 @@ export default function AdminOrders() {
                     {readyOrders.map((order: any) => (
                       <TableRow key={order.id}>
                         <TableCell className="font-medium">#{order.id}</TableCell>
-                        <TableCell>{order.user?.name || "Unknown"}</TableCell>
                         <TableCell>
                           {order.createdAt 
                             ? format(new Date(order.createdAt), 'MMM dd, yyyy') 
                             : 'N/A'}
                         </TableCell>
                         <TableCell>₹{order.totalAmount?.toFixed(2) || '0.00'}</TableCell>
-                        <TableCell>{order.seller?.businessName || "Unknown"}</TableCell>
+                        <TableCell>{order.seller?.businessName || "Seller #" + order.sellerId}</TableCell>
+                        <TableCell>
+                          {order.trackingNumber ? (
+                            <span className="text-green-600 font-medium">{order.trackingNumber}</span>
+                          ) : (
+                            <span className="text-gray-400">Not assigned</span>
+                          )}
+                        </TableCell>
                         <TableCell>
                           <div className="flex space-x-2">
                             <Button 
