@@ -381,7 +381,7 @@ export default function AdminOrders() {
 
       {/* Order Detail Dialog */}
       <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
-        <DialogContent className="max-w-3xl">
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Order Details</DialogTitle>
             <DialogDescription>
@@ -391,14 +391,26 @@ export default function AdminOrders() {
           
           {selectedOrder && (
             <div className="space-y-6">
-              <div className="grid grid-cols-2 gap-6">
+              {selectedOrder.status === "ready" && (
+                <div className="bg-amber-50 border border-amber-100 rounded-md p-4">
+                  <div className="flex items-center">
+                    <AlertCircle className="h-5 w-5 text-amber-600 mr-2" />
+                    <h3 className="text-amber-800 font-medium">Ready for Fulfillment</h3>
+                  </div>
+                  <p className="text-sm text-amber-700 mt-1">
+                    This order has been marked as ready by the seller and is awaiting shipping information.
+                  </p>
+                </div>
+              )}
+              
+              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <h3 className="text-sm font-medium text-muted-foreground mb-2">Customer Information</h3>
-                  <div className="border rounded-md p-4">
+                  <div className="border rounded-md p-3 bg-gray-50">
                     <p className="font-medium">{selectedOrder.customerName || selectedOrder.user?.name || "Unknown"}</p>
-                    <p>{selectedOrder.user?.email || "No email provided"}</p>
-                    <p className="mt-2 text-sm font-medium">Shipping Address:</p>
-                    <p className="text-sm">{selectedOrder.address || selectedOrder.shippingAddress || "No shipping address provided"}</p>
+                    <p className="text-sm">{selectedOrder.user?.email || "No email provided"}</p>
+                    <p className="mt-2 text-xs font-medium text-gray-500">Shipping Address:</p>
+                    <p className="text-sm">{selectedOrder.address || "No address provided"}</p>
                   </div>
                 </div>
                 
