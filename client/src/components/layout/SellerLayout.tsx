@@ -207,16 +207,7 @@ export default function SellerLayout({ children }: SellerLayoutProps) {
             </button>
 
             <div className="flex items-center">
-              <button
-                type="button"
-                className="rounded-full bg-white p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 relative"
-              >
-                <span className="sr-only">View notifications</span>
-                <Bell className="h-6 w-6" aria-hidden="true" />
-                <span className="absolute -top-1 -right-1 bg-primary text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">2</span>
-              </button>
-
-              <div className="ml-4 flex items-center">
+              <div className="flex items-center">
                 <span className="text-gray-700 mr-2">{user.businessName || user.email}</span>
                 <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-700">
                   {(user.businessName || user.email).charAt(0).toUpperCase()}

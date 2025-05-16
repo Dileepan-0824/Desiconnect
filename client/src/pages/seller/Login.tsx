@@ -53,10 +53,11 @@ export default function SellerLogin() {
       
       toast({
         title: "Login Successful",
-        description: "Welcome to your seller dashboard!",
+        description: "Welcome back! Redirecting to orders page.",
       });
       
-      navigate("/seller");
+      // Redirect directly to orders page instead of dashboard
+      navigate("/seller/orders");
     } catch (error) {
       toast({
         title: "Login Failed",
