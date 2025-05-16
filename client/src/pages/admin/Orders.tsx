@@ -459,23 +459,25 @@ export default function AdminOrders() {
                           onClick={() => {
                             // Logic to approve and fulfill the order
                             // Call API to update order status
-                            fetch(`/api/admin/orders/${selectedOrder.id}/status`, {
+                            fetch(`/api/admin/orders/${selectedOrder.id}/tracking`, {
                               method: 'PUT',
                               headers: {
                                 'Content-Type': 'application/json',
                                 'Authorization': `Bearer ${token}`
                               },
-                              body: JSON.stringify({ status: 'fulfilled' })
+                              body: JSON.stringify({ 
+                                trackingNumber: selectedOrder.trackingNumber,
+                                status: 'fulfilled'
+                              })
                             })
                             .then(() => {
-                              // Remove the order from readyOrders state locally
-                              setReadyOrders(readyOrders.filter(order => order.id !== selectedOrder.id));
+                                // Close the dialog and show success message
                               setViewDialogOpen(false);
                               toast({
                                 title: "Order Approved",
                                 description: "The order has been approved and fulfilled successfully.",
                               });
-                              // Invalidate queries to refresh data
+                              // Invalidate queries to refresh data and remove the order from the list
                               queryClient.invalidateQueries({ queryKey: ["/api/admin/orders/status/ready"] });
                               queryClient.invalidateQueries({ queryKey: ["/api/admin/orders"] });
                             })
