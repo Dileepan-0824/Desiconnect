@@ -42,7 +42,7 @@ export default function SellerDashboard() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mt-6">
+      <div className="grid gap-4 md:grid-cols-2 mt-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Products</CardTitle>
@@ -52,19 +52,6 @@ export default function SellerDashboard() {
             <div className="text-2xl font-bold">{stats?.totalProducts || 0}</div>
             <p className="text-xs text-muted-foreground">
               {stats?.pendingProducts || 0} pending approval
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
-            <ShoppingCart className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats?.totalOrders || 0}</div>
-            <p className="text-xs text-muted-foreground">
-              {stats?.pendingOrders || 0} pending fulfillment
             </p>
           </CardContent>
         </Card>
@@ -81,67 +68,32 @@ export default function SellerDashboard() {
             </p>
           </CardContent>
         </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg. Fulfillment Time</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats?.avgFulfillmentDays || 0} days</div>
-            <p className="text-xs text-muted-foreground">
-              Industry avg: 3.2 days
-            </p>
-          </CardContent>
-        </Card>
       </div>
 
 
 
-      {/* Recent Orders */}
+      {/* Quick Actions */}
       <div className="mt-6">
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>Recent Orders</CardTitle>
-              <Link href="/seller/orders">
-                <Button variant="outline" size="sm">View All</Button>
-              </Link>
-            </div>
+            <CardTitle>Quick Actions</CardTitle>
+            <CardDescription>Manage your store efficiently</CardDescription>
           </CardHeader>
           <CardContent>
-            {stats?.recentOrders && stats.recentOrders.length > 0 ? (
-              <div className="space-y-4">
-                {stats.recentOrders.map((order: any) => (
-                  <div key={order.id} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <p className="font-medium">Order #{order.id}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {new Date(order.createdAt).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="font-medium">₹{order.totalAmount.toFixed(2)}</p>
-                      <p className="text-sm text-right">
-                        {order.status === 'placed' && (
-                          <span className="text-yellow-500">Pending</span>
-                        )}
-                        {order.status === 'ready' && (
-                          <span className="text-blue-500">Ready</span>
-                        )}
-                        {order.status === 'fulfilled' && (
-                          <span className="text-green-500">Fulfilled</span>
-                        )}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="py-6 text-center">
-                <p className="text-muted-foreground">No recent orders found</p>
-              </div>
-            )}
+            <div className="grid grid-cols-2 gap-4">
+              <Link href="/seller/products">
+                <Button className="w-full" variant="outline">
+                  <Package className="mr-2 h-5 w-5" />
+                  Manage Products
+                </Button>
+              </Link>
+              <Link href="/seller/orders">
+                <Button className="w-full" variant="outline">
+                  <ShoppingCart className="mr-2 h-5 w-5" />
+                  View Orders
+                </Button>
+              </Link>
+            </div>
           </CardContent>
         </Card>
       </div>
