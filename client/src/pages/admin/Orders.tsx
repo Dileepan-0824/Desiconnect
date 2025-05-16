@@ -9,7 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { 
   AlertCircle, 
   Eye,
-  Truck
+  Truck,
+  CheckCircle
 } from "lucide-react";
 import { 
   Dialog,
