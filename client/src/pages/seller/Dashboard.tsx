@@ -1,302 +1,254 @@
-import React from "react";
+import { useEffect, useState } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
-import SellerLayout from "@/components/layout/SellerLayout";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { getSellerStats, getSellerOrders, getSellerProducts, markOrderReady } from "@/lib/api";
-import { formatCurrency, formatDate, getOrderStatusBadgeColor, getProductStatusBadgeColor } from "@/lib/utils";
-import { useToast } from "@/hooks/use-toast";
-import { useLocation } from "wouter";
-import {
-  Package,
-  Clock,
+import { Link } from "wouter";
+import { 
+  BarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell
+} from "recharts";
+import { 
+  Package, 
+  ShoppingCart, 
+  TrendingUp, 
   DollarSign,
-  TrendingUp,
-  ShoppingBag,
-  CheckCircle,
-  AlertCircle,
-  ArrowUpRight,
+  Clock
 } from "lucide-react";
 
 export default function SellerDashboard() {
-  const { toast } = useToast();
-  const [_, navigate] = useLocation();
-
-  const { data: stats, isLoading: statsLoading } = useQuery({
+  const { user, token } = useAuth();
+  
+  // Fetch seller stats
+  const { data: stats, isLoading } = useQuery({
     queryKey: ["/api/seller/stats"],
+    enabled: !!token && !!user,
   });
 
-  const { data: orders, isLoading: ordersLoading, refetch: refetchOrders } = useQuery({
-    queryKey: ["/api/seller/orders"],
-  });
+  // Sample data for charts (will be replaced with actual data from API)
+  const [orderData, setOrderData] = useState([
+    { name: 'Jan', orders: 4 },
+    { name: 'Feb', orders: 6 },
+    { name: 'Mar', orders: 8 },
+    { name: 'Apr', orders: 12 },
+    { name: 'May', orders: 10 },
+    { name: 'Jun', orders: 15 },
+  ]);
 
-  const { data: products, isLoading: productsLoading } = useQuery({
-    queryKey: ["/api/seller/products"],
-  });
+  const [productData, setProductData] = useState([
+    { name: 'Clothing', value: 35 },
+    { name: 'Jewelry', value: 20 },
+    { name: 'Home Decor', value: 15 },
+    { name: 'Handicrafts', value: 25 },
+    { name: 'Others', value: 5 },
+  ]);
 
-  const recentOrders = orders?.slice(0, 5) || [];
-  const pendingProducts = products?.filter((p: any) => p.status === "pending").slice(0, 5) || [];
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
-  const handleMarkReady = async (orderId: number) => {
-    try {
-      await markOrderReady(orderId);
-      toast({
-        title: "Success",
-        description: "Order marked as ready for pickup",
-      });
-      refetchOrders();
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update order status",
-        variant: "destructive",
-      });
+  useEffect(() => {
+    if (stats) {
+      // Update the chart data with actual stats when available
+      if (stats.monthlyOrders) {
+        setOrderData(stats.monthlyOrders);
+      }
+      
+      if (stats.productCategories) {
+        setProductData(stats.productCategories);
+      }
     }
-  };
+  }, [stats]);
 
-  if (statsLoading) {
+  if (isLoading) {
     return (
-      <SellerLayout>
-        <div className="flex items-center justify-center h-64">
-          <p>Loading dashboard...</p>
+      <div className="p-8">
+        <div className="flex items-center justify-center">
+          <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
         </div>
-      </SellerLayout>
+      </div>
     );
   }
 
   return (
-    <SellerLayout>
-      <h1 className="text-2xl font-bold mb-6">Seller Dashboard</h1>
+    <div className="p-8">
+      <div className="flex flex-col space-y-4">
+        <h1 className="text-3xl font-bold tracking-tight">Seller Dashboard</h1>
+        <p className="text-muted-foreground">
+          Welcome back{user?.businessName ? `, ${user.businessName}` : ''}! Here's an overview of your store's performance.
+        </p>
+      </div>
 
-      {/* Dashboard Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      {/* Stats Cards */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mt-6">
         <Card>
-          <CardContent className="p-6">
-            <div className="flex justify-between">
-              <div>
-                <p className="text-gray-500 text-sm">Total Products</p>
-                <h3 className="text-2xl font-bold">{stats?.totalProducts || 0}</h3>
-              </div>
-              <div className="bg-primary/10 h-12 w-12 rounded-lg flex items-center justify-center text-primary">
-                <Package className="h-6 w-6" />
-              </div>
-            </div>
-            <div className="mt-4 flex items-center text-xs text-green-500">
-              <TrendingUp className="h-4 w-4 mr-1" />
-              <span>12% from last month</span>
-            </div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Products</CardTitle>
+            <Package className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats?.totalProducts || 0}</div>
+            <p className="text-xs text-muted-foreground">
+              {stats?.pendingProducts || 0} pending approval
+            </p>
           </CardContent>
         </Card>
-
+        
         <Card>
-          <CardContent className="p-6">
-            <div className="flex justify-between">
-              <div>
-                <p className="text-gray-500 text-sm">New Orders</p>
-                <h3 className="text-2xl font-bold">{stats?.newOrders || 0}</h3>
-              </div>
-              <div className="bg-blue-100 h-12 w-12 rounded-lg flex items-center justify-center text-blue-500">
-                <ShoppingBag className="h-6 w-6" />
-              </div>
-            </div>
-            <div className="mt-4 flex items-center text-xs text-green-500">
-              <TrendingUp className="h-4 w-4 mr-1" />
-              <span>23% from last month</span>
-            </div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
+            <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats?.totalOrders || 0}</div>
+            <p className="text-xs text-muted-foreground">
+              {stats?.pendingOrders || 0} pending fulfillment
+            </p>
           </CardContent>
         </Card>
-
+        
         <Card>
-          <CardContent className="p-6">
-            <div className="flex justify-between">
-              <div>
-                <p className="text-gray-500 text-sm">Pending Approvals</p>
-                <h3 className="text-2xl font-bold">{stats?.pendingApprovals || 0}</h3>
-              </div>
-              <div className="bg-yellow-100 h-12 w-12 rounded-lg flex items-center justify-center text-yellow-500">
-                <Clock className="h-6 w-6" />
-              </div>
-            </div>
-            <div className="mt-4 flex items-center text-xs text-gray-500">
-              <span>Average approval time: 24 hours</span>
-            </div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Revenue</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">₹{stats?.totalRevenue?.toLocaleString() || '0'}</div>
+            <p className="text-xs text-muted-foreground">
+              {stats?.revenueGrowth > 0 ? '+' : ''}{stats?.revenueGrowth || 0}% from last month
+            </p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Avg. Fulfillment Time</CardTitle>
+            <Clock className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats?.avgFulfillmentDays || 0} days</div>
+            <p className="text-xs text-muted-foreground">
+              Industry avg: 3.2 days
+            </p>
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        {/* Recent Orders */}
+      {/* Charts */}
+      <div className="grid gap-4 md:grid-cols-2 mt-6">
         <Card>
-          <CardContent className="p-0">
-            <div className="flex items-center justify-between p-4 border-b">
-              <h2 className="font-semibold">Recent Orders</h2>
-              <Button variant="link" onClick={() => navigate("/seller/orders")}>
-                View All
-              </Button>
-            </div>
-
-            {ordersLoading ? (
-              <div className="p-4 text-center">Loading orders...</div>
-            ) : recentOrders.length === 0 ? (
-              <div className="p-8 text-center">
-                <ShoppingBag className="w-12 h-12 mx-auto text-gray-300 mb-2" />
-                <p className="text-gray-500">No orders yet</p>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="bg-gray-50">
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Order ID</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {recentOrders.map((order: any) => (
-                      <tr key={order.id} className="border-t">
-                        <td className="px-4 py-3 whitespace-nowrap text-sm">{`#${order.id}`}</td>
-                        <td className="px-4 py-3 whitespace-nowrap text-sm">{order.customerName}</td>
-                        <td className="px-4 py-3 whitespace-nowrap text-sm">{formatDate(order.createdAt)}</td>
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          <Badge className={getOrderStatusBadgeColor(order.status)}>
-                            {order.status}
-                          </Badge>
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          {order.status === "placed" ? (
-                            <Button
-                              variant="default"
-                              size="sm"
-                              onClick={() => handleMarkReady(order.id)}
-                            >
-                              Mark Ready
-                            </Button>
-                          ) : order.status === "ready" ? (
-                            <span className="text-sm text-gray-500">Awaiting Admin</span>
-                          ) : (
-                            <span className="text-sm text-green-500 flex items-center">
-                              <CheckCircle className="h-4 w-4 mr-1" /> Fulfilled
-                            </span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
+          <CardHeader>
+            <CardTitle>Monthly Orders</CardTitle>
+            <CardDescription>
+              Number of orders received per month
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={orderData}
+                margin={{
+                  top: 5,
+                  right: 30,
+                  left: 20,
+                  bottom: 5,
+                }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="orders" fill="#8884d8" />
+              </BarChart>
+            </ResponsiveContainer>
           </CardContent>
         </Card>
-
-        {/* Pending Products */}
+        
         <Card>
-          <CardContent className="p-0">
-            <div className="flex items-center justify-between p-4 border-b">
-              <h2 className="font-semibold">Pending Products</h2>
-              <Button variant="link" onClick={() => navigate("/seller/products")}>
-                Add New Product
-              </Button>
-            </div>
+          <CardHeader>
+            <CardTitle>Product Categories</CardTitle>
+            <CardDescription>
+              Distribution of your products by category
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={productData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {productData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
 
-            {productsLoading ? (
-              <div className="p-4 text-center">Loading products...</div>
-            ) : pendingProducts.length === 0 ? (
-              <div className="p-8 text-center">
-                <CheckCircle className="w-12 h-12 mx-auto text-green-300 mb-2" />
-                <p className="text-gray-500">No pending approvals</p>
+      {/* Recent Orders */}
+      <div className="mt-6">
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle>Recent Orders</CardTitle>
+              <Link href="/seller/orders">
+                <Button variant="outline" size="sm">View All</Button>
+              </Link>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {stats?.recentOrders && stats.recentOrders.length > 0 ? (
+              <div className="space-y-4">
+                {stats.recentOrders.map((order: any) => (
+                  <div key={order.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div>
+                      <p className="font-medium">Order #{order.id}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {new Date(order.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="font-medium">₹{order.totalAmount.toFixed(2)}</p>
+                      <p className="text-sm text-right">
+                        {order.status === 'placed' && (
+                          <span className="text-yellow-500">Pending</span>
+                        )}
+                        {order.status === 'ready' && (
+                          <span className="text-blue-500">Ready</span>
+                        )}
+                        {order.status === 'fulfilled' && (
+                          <span className="text-green-500">Fulfilled</span>
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="bg-gray-50">
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Price</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {pendingProducts.map((product: any) => (
-                      <tr key={product.id} className="border-t">
-                        <td className="px-4 py-3">
-                          <div className="flex items-center">
-                            <div className="h-10 w-10 flex-shrink-0 bg-gray-100 rounded-md overflow-hidden">
-                              {product.image ? (
-                                <img src={product.image} alt={product.name} className="h-10 w-10 object-cover" />
-                              ) : (
-                                <div className="h-10 w-10 flex items-center justify-center">
-                                  <Package className="h-5 w-5 text-gray-400" />
-                                </div>
-                              )}
-                            </div>
-                            <div className="ml-4">
-                              <div className="text-sm font-medium text-gray-900">{product.name}</div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap text-sm">{formatCurrency(product.price)}</td>
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          <Badge className={getProductStatusBadgeColor(product.status)}>
-                            {product.status}
-                          </Badge>
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap text-sm">{formatDate(product.createdAt)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div className="py-6 text-center">
+                <p className="text-muted-foreground">No recent orders found</p>
               </div>
             )}
           </CardContent>
         </Card>
       </div>
-
-      {/* Revenue Summary */}
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-semibold">Revenue Summary</h2>
-            <div className="text-sm text-gray-500">
-              Total Revenue: <span className="font-bold text-green-600">{formatCurrency(stats?.totalRevenue || 0)}</span>
-            </div>
-          </div>
-          
-          <div className="flex flex-col md:flex-row items-center justify-around p-6 bg-gray-50 rounded-lg">
-            <div className="text-center mb-4 md:mb-0">
-              <div className="text-sm text-gray-500 mb-1">This Week</div>
-              <div className="text-2xl font-bold">₹12,345</div>
-              <div className="text-xs text-green-500 flex items-center justify-center mt-1">
-                <ArrowUpRight className="h-3 w-3 mr-1" /> 8% 
-              </div>
-            </div>
-            
-            <div className="h-10 border-l border-gray-300 hidden md:block"></div>
-            
-            <div className="text-center mb-4 md:mb-0">
-              <div className="text-sm text-gray-500 mb-1">This Month</div>
-              <div className="text-2xl font-bold">₹45,678</div>
-              <div className="text-xs text-green-500 flex items-center justify-center mt-1">
-                <ArrowUpRight className="h-3 w-3 mr-1" /> 12%
-              </div>
-            </div>
-            
-            <div className="h-10 border-l border-gray-300 hidden md:block"></div>
-            
-            <div className="text-center">
-              <div className="text-sm text-gray-500 mb-1">Avg. Order Value</div>
-              <div className="text-2xl font-bold">₹1,890</div>
-              <div className="text-xs text-green-500 flex items-center justify-center mt-1">
-                <ArrowUpRight className="h-3 w-3 mr-1" /> 5%
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </SellerLayout>
+    </div>
   );
 }

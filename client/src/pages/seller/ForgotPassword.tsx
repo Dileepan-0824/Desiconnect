@@ -1,66 +1,61 @@
-import React, { useState } from "react";
-import { useLocation } from "wouter";
+import { useState } from "react";
+import { useLocation, Link } from "wouter";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { resetSellerPassword } from "@/lib/api";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from "@/components/ui/alert";
-import { AlertCircle, ArrowLeft } from "lucide-react";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { AlertCircle, CheckCircle2 } from "lucide-react";
 
-const resetFormSchema = z.object({
+const forgotPasswordSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
 });
 
+type ForgotPasswordForm = z.infer<typeof forgotPasswordSchema>;
+
 export default function SellerForgotPassword() {
-  const [location, navigate] = useLocation();
+  const [, navigate] = useLocation();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [resetSent, setResetSent] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
-  const form = useForm<z.infer<typeof resetFormSchema>>({
-    resolver: zodResolver(resetFormSchema),
+  const form = useForm<ForgotPasswordForm>({
+    resolver: zodResolver(forgotPasswordSchema),
     defaultValues: {
       email: "",
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof resetFormSchema>) => {
+  const onSubmit = async (data: ForgotPasswordForm) => {
     setIsLoading(true);
     try {
-      await resetSellerPassword(values.email);
-      setResetSent(true);
-      toast({
-        title: "Reset email sent",
-        description: "If your email exists in our system, you'll receive instructions to reset your password.",
+      const response = await fetch("/api/auth/seller/reset-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
       });
-    } catch (error: any) {
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || "Password reset request failed");
+      }
+
+      setIsSuccess(true);
       toast({
+        title: "Reset Link Sent",
+        description: "Check your email for password reset instructions.",
+      });
+    } catch (error) {
+      toast({
+        title: "Request Failed",
+        description: error instanceof Error ? error.message : "Unable to process your request",
         variant: "destructive",
-        title: "Error",
-        description: error.message || "Something went wrong. Please try again.",
       });
     } finally {
       setIsLoading(false);
@@ -68,26 +63,31 @@ export default function SellerForgotPassword() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+    <div className="container flex items-center justify-center min-h-screen">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <div className="flex justify-center mb-2">
-            <span className="text-3xl font-bold text-primary">DesiConnect</span>
-          </div>
-          <CardTitle className="text-2xl text-center font-bold">Reset Password</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center">Reset Seller Password</CardTitle>
           <CardDescription className="text-center">
-            Enter your email to receive reset instructions
+            Enter your email to receive a password reset link
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {resetSent ? (
-            <Alert className="mb-4">
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Check your email</AlertTitle>
-              <AlertDescription>
-                If an account exists with this email, you'll receive a password reset link.
-              </AlertDescription>
-            </Alert>
+          {isSuccess ? (
+            <div className="space-y-4">
+              <div className="flex flex-col items-center justify-center p-4 bg-green-50 rounded-lg">
+                <CheckCircle2 className="h-12 w-12 text-green-500 mb-2" />
+                <h3 className="text-lg font-semibold text-center">Reset Link Sent!</h3>
+                <p className="text-center text-sm mt-2">
+                  We've sent a password reset link to your email address. Please check your inbox and follow the instructions.
+                </p>
+              </div>
+              <Button 
+                onClick={() => navigate("/seller/login")} 
+                className="w-full"
+              >
+                Return to Login
+              </Button>
+            </div>
           ) : (
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -98,32 +98,35 @@ export default function SellerForgotPassword() {
                     <FormItem>
                       <FormLabel>Email</FormLabel>
                       <FormControl>
-                        <Input
-                          placeholder="your@email.com"
-                          type="email"
-                          {...field}
+                        <Input 
+                          placeholder="Enter your email address" 
+                          type="email" 
+                          {...field} 
                         />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Sending..." : "Send Reset Instructions"}
+                
+                <Button 
+                  type="submit" 
+                  className="w-full" 
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Processing..." : "Send Reset Link"}
                 </Button>
               </form>
             </Form>
           )}
         </CardContent>
         <CardFooter className="flex justify-center">
-          <Button
-            variant="link"
-            onClick={() => navigate("/seller/login")}
-            className="text-sm text-gray-600 flex items-center"
-          >
-            <ArrowLeft className="h-4 w-4 mr-1" />
-            Back to login
-          </Button>
+          <div className="text-sm text-center">
+            Remember your password?{" "}
+            <Link href="/seller/login" className="text-primary hover:underline">
+              Login
+            </Link>
+          </div>
         </CardFooter>
       </Card>
     </div>
