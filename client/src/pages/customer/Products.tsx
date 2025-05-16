@@ -66,13 +66,7 @@ export default function CustomerProducts() {
     }
   });
   
-  // Function to handle search submission
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/products?search=${encodeURIComponent(searchQuery)}`);
-    }
-  };
+  // We'll use the search bar in the header for searching
   
   // Function to handle category selection
   const handleCategoryChange = (value: string) => {
@@ -308,22 +302,6 @@ export default function CustomerProducts() {
 
           {/* Products Grid */}
           <div className="flex-1">
-            {/* Search Bar */}
-            <div className="mb-6">
-              <form onSubmit={handleSearch} className="flex gap-2">
-                <div className="relative flex-1">
-                  <Input
-                    type="text"
-                    placeholder="Search products..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10"
-                  />
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                </div>
-                <Button type="submit">Search</Button>
-              </form>
-            </div>
 
             {/* Mobile Filters */}
             <div className="md:hidden mb-6">
