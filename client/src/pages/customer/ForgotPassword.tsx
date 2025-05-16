@@ -48,9 +48,14 @@ export default function CustomerForgotPassword() {
 
       setIsSuccess(true);
       toast({
-        title: "Reset Link Sent",
-        description: "Check your email for password reset instructions.",
+        title: "Password Reset Mode",
+        description: "Since email sending is not configured, please contact support for a password reset or use the default account.",
       });
+      
+      // Provide alternative instructions
+      setTimeout(() => {
+        navigate("/login");
+      }, 3000);
     } catch (error) {
       toast({
         title: "Request Failed",
