@@ -184,17 +184,15 @@ export default function AdminSellers() {
                           <Edit className="h-4 w-4" />
                         </Button>
                         
-                        {!seller.approved && (
-                          <Button 
-                            variant="default"
-                            size="sm"
-                            className="bg-green-600 hover:bg-green-700 text-white"
-                            onClick={() => handleApproveSeller(seller.id)}
-                            disabled={processingId === seller.id}
-                          >
-                            {processingId === seller.id ? "Processing..." : "Approve"}
-                          </Button>
-                        )}
+                        <Button 
+                          variant="default"
+                          size="sm"
+                          className="bg-green-600 hover:bg-green-700 text-white"
+                          onClick={() => handleApproveSeller(seller.id)}
+                          disabled={processingId === seller.id || seller.approved}
+                        >
+                          {processingId === seller.id ? "Processing..." : "Approve"}
+                        </Button>
                         
                         <Button 
                           variant="destructive"
