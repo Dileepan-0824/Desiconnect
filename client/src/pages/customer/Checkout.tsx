@@ -73,6 +73,20 @@ export default function CustomerCheckout() {
       }).then(res => res.json());
     },
     onSuccess: () => {
+      // Clear cart by updating it to empty
+      fetch("/api/customer/cart", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ items: [] })
+      }).then(() => {
+        console.log("Cart cleared after order placement");
+      }).catch(err => {
+        console.error("Failed to clear cart after order:", err);
+      });
+      
       toast({
         title: "Order Placed Successfully",
         description: "Your order has been placed and is being processed.",

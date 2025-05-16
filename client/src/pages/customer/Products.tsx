@@ -136,16 +136,46 @@ export default function CustomerProducts() {
     }
 
     try {
-      // Get current cart
+      // Get current cart with proper authorization
+      const token = localStorage.getItem('desiconnect_token');
+      
+      if (!token) {
+        toast({
+          variant: "destructive",
+          title: "Authentication error",
+          description: "Please log in again to continue shopping",
+        });
+        navigate("/login");
+        return;
+      }
+      
       const response = await fetch("/api/customer/cart", {
         credentials: "include",
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
       });
       
       if (!response.ok) {
+        if (response.status === 401) {
+          toast({
+            variant: "destructive",
+            title: "Session expired",
+            description: "Your session has expired. Please log in again.",
+          });
+          navigate("/login");
+          return;
+        }
         throw new Error("Failed to fetch cart");
       }
       
-      const currentCart = await response.json();
+      let currentCart;
+      try {
+        currentCart = await response.json();
+      } catch (error) {
+        console.error("Error parsing cart JSON:", error);
+        currentCart = { items: [] };
+      }
       
       // Check if product is already in cart
       const existingItem = currentCart.items.find((item: any) => item.productId === productId);
@@ -166,13 +196,26 @@ export default function CustomerProducts() {
         ];
       }
       
-      // Update cart
-      await updateCart({ items: newItems });
-      
-      toast({
-        title: "Added to cart",
-        description: "Item has been added to your cart",
-      });
+      // Update cart with better error handling
+      try {
+        await updateCart({ items: newItems });
+        
+        // Refresh products data to update quantities
+        queryClient.invalidateQueries({queryKey: ["/api/products"]});
+        
+        toast({
+          title: "Added to cart",
+          description: "Item has been added to your cart",
+        });
+      } catch (updateError) {
+        console.error("Failed to update cart:", updateError);
+        toast({
+          variant: "destructive",
+          title: "Cart update failed",
+          description: "Please try logging in again or refresh the page",
+        });
+        throw updateError;
+      }
     } catch (error: any) {
       toast({
         variant: "destructive",
