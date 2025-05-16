@@ -317,3 +317,58 @@ export const addTrackingToOrder = async (req: Request, res: Response) => {
     return res.status(500).json({ message: 'Server error' });
   }
 };
+
+// Seller approval/rejection operations
+export const approveSeller = async (req: Request, res: Response) => {
+  try {
+    const sellerId = parseInt(req.params.id);
+    const seller = await storage.getSeller(sellerId);
+    
+    if (!seller) {
+      return res.status(404).json({ message: 'Seller not found' });
+    }
+    
+    const updatedSeller = await storage.updateSeller(sellerId, { 
+      approved: true, 
+      rejected: false 
+    });
+    
+    // Send approval notification email in production
+    // await sendSellerApprovalEmail(seller.email);
+    
+    return res.status(200).json({
+      message: 'Seller approved successfully',
+      seller: updatedSeller
+    });
+  } catch (error) {
+    console.error('Error approving seller:', error);
+    return res.status(500).json({ message: 'Server error' });
+  }
+};
+
+export const rejectSeller = async (req: Request, res: Response) => {
+  try {
+    const sellerId = parseInt(req.params.id);
+    const seller = await storage.getSeller(sellerId);
+    
+    if (!seller) {
+      return res.status(404).json({ message: 'Seller not found' });
+    }
+    
+    const updatedSeller = await storage.updateSeller(sellerId, { 
+      approved: false, 
+      rejected: true 
+    });
+    
+    // Send rejection notification email in production
+    // await sendSellerRejectionEmail(seller.email);
+    
+    return res.status(200).json({
+      message: 'Seller rejected successfully',
+      seller: updatedSeller
+    });
+  } catch (error) {
+    console.error('Error rejecting seller:', error);
+    return res.status(500).json({ message: 'Server error' });
+  }
+};

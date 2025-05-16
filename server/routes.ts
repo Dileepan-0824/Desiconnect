@@ -51,6 +51,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/admin/sellers", authenticate, authorizeAdmin, adminController.getAllSellers);
   app.get("/api/admin/sellers/:id", authenticate, authorizeAdmin, adminController.getSeller);
   app.put("/api/admin/sellers/:id", authenticate, authorizeAdmin, adminController.updateSeller);
+  app.put("/api/admin/sellers/:id/approve", authenticate, authorizeAdmin, adminController.approveSeller);
+  app.put("/api/admin/sellers/:id/reject", authenticate, authorizeAdmin, adminController.rejectSeller);
   
   // Admin Product Management
   app.get("/api/admin/products/pending", authenticate, authorizeAdmin, adminController.getPendingProducts);

@@ -44,6 +44,9 @@ export default function AdminSellers() {
   const [selectedSeller, setSelectedSeller] = useState<any>(null);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [approveDialogOpen, setApproveDialogOpen] = useState(false);
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [processingId, setProcessingId] = useState<number | null>(null);
   
   // Fetch all sellers
   const { data: sellers, isLoading } = useQuery({
@@ -102,6 +105,90 @@ export default function AdminSellers() {
   const handleViewSeller = (seller: any) => {
     setSelectedSeller(seller);
     setViewDialogOpen(true);
+  };
+
+  // Seller approval mutation
+  const approveSellerMutation = useMutation({
+    mutationFn: async (sellerId: number) => {
+      const response = await fetch(`/api/admin/sellers/${sellerId}/approve`, {
+        method: "PUT",
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to approve seller");
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Seller Approved",
+        description: "The seller has been approved successfully.",
+      });
+      
+      setApproveDialogOpen(false);
+      setProcessingId(null);
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/sellers"] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Approval Failed",
+        description: error instanceof Error ? error.message : "Failed to approve seller",
+        variant: "destructive",
+      });
+      setProcessingId(null);
+    }
+  });
+
+  // Seller rejection mutation
+  const rejectSellerMutation = useMutation({
+    mutationFn: async (sellerId: number) => {
+      const response = await fetch(`/api/admin/sellers/${sellerId}/reject`, {
+        method: "PUT",
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to reject seller");
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Seller Rejected",
+        description: "The seller has been rejected.",
+      });
+      
+      setRejectDialogOpen(false);
+      setProcessingId(null);
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/sellers"] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Rejection Failed",
+        description: error instanceof Error ? error.message : "Failed to reject seller",
+        variant: "destructive",
+      });
+      setProcessingId(null);
+    }
+  });
+
+  const handleApproveSeller = (sellerId: number) => {
+    setProcessingId(sellerId);
+    approveSellerMutation.mutate(sellerId);
+  };
+
+  const handleRejectSeller = (sellerId: number) => {
+    setProcessingId(sellerId);
+    rejectSellerMutation.mutate(sellerId);
   };
 
   const onCreateSellerSubmit = (data: CreateSellerForm) => {
@@ -272,6 +359,26 @@ export default function AdminSellers() {
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
+                        {!seller.approved && (
+                          <Button 
+                            variant="default"
+                            size="sm"
+                            onClick={() => handleApproveSeller(seller.id)}
+                            className="ml-2 bg-green-600 hover:bg-green-700"
+                          >
+                            Approve
+                          </Button>
+                        )}
+                        {!seller.rejected && !seller.approved && (
+                          <Button 
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleRejectSeller(seller.id)}
+                            className="ml-2"
+                          >
+                            Reject
+                          </Button>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>
