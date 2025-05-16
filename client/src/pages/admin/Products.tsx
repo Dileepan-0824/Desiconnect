@@ -27,7 +27,7 @@ import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
 
 export default function AdminProducts() {
-  const { user, token } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
@@ -35,13 +35,13 @@ export default function AdminProducts() {
   // Fetch pending products
   const { data: pendingProducts, isLoading: isPendingLoading } = useQuery({
     queryKey: ["/api/admin/products/pending"],
-    enabled: !!token && !!user,
+    enabled: !!isAuthenticated,
   });
 
   // Fetch all products
   const { data: allProducts, isLoading: isAllLoading } = useQuery({
     queryKey: ["/api/products"],
-    enabled: !!token && !!user,
+    enabled: !!isAuthenticated,
   });
 
   // Approve product mutation
@@ -51,7 +51,7 @@ export default function AdminProducts() {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
+          "Authorization": `Bearer ${localStorage.getItem('desiconnect_token')}`
         }
       });
       
@@ -88,7 +88,7 @@ export default function AdminProducts() {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
+          "Authorization": `Bearer ${localStorage.getItem('desiconnect_token')}`
         }
       });
       
@@ -123,7 +123,7 @@ export default function AdminProducts() {
       const response = await fetch(`/api/admin/products/${productId}`, {
         method: "DELETE",
         headers: {
-          "Authorization": `Bearer ${token}`
+          "Authorization": `Bearer ${localStorage.getItem('desiconnect_token')}`
         }
       });
       
@@ -222,7 +222,7 @@ export default function AdminProducts() {
                         <TableCell className="font-medium">{product.name}</TableCell>
                         <TableCell>{product.seller?.businessName || "Unknown Seller"}</TableCell>
                         <TableCell>{product.category}</TableCell>
-                        <TableCell>₹{product.price?.toFixed(2) || "0.00"}</TableCell>
+                        <TableCell>{formatCurrency(product.price)}</TableCell>
                         <TableCell>{getStatusBadge(product.status)}</TableCell>
                         <TableCell>
                           <div className="flex space-x-2">
@@ -297,7 +297,7 @@ export default function AdminProducts() {
                         <TableCell className="font-medium">{product.name}</TableCell>
                         <TableCell>{product.seller?.businessName || "Unknown Seller"}</TableCell>
                         <TableCell>{product.category}</TableCell>
-                        <TableCell>₹{product.price?.toFixed(2) || "0.00"}</TableCell>
+                        <TableCell>{formatCurrency(product.price)}</TableCell>
                         <TableCell>{getStatusBadge(product.status)}</TableCell>
                         <TableCell>
                           <div className="flex space-x-2">
@@ -350,9 +350,9 @@ export default function AdminProducts() {
           {selectedProduct && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                {selectedProduct.imageUrl ? (
+                {selectedProduct.image ? (
                   <img 
-                    src={selectedProduct.imageUrl} 
+                    src={selectedProduct.image} 
                     alt={selectedProduct.name} 
                     className="w-full h-auto rounded-lg object-cover"
                   />
@@ -377,12 +377,12 @@ export default function AdminProducts() {
                   
                   <div>
                     <p className="text-sm text-muted-foreground">Price</p>
-                    <p className="font-bold">₹{selectedProduct.price?.toFixed(2) || "0.00"}</p>
+                    <p className="font-bold">{formatCurrency(selectedProduct.price)}</p>
                   </div>
                   
                   <div>
                     <p className="text-sm text-muted-foreground">Stock</p>
-                    <p>{selectedProduct.stockQuantity || 0} units</p>
+                    <p>{selectedProduct.quantity || 0} units</p>
                   </div>
                   
                   <div>
@@ -401,32 +401,29 @@ export default function AdminProducts() {
           
           <DialogFooter className="flex justify-between">
             {selectedProduct && selectedProduct.status === "pending" && (
-              <>
+              <div className="flex w-full space-x-4">
                 <Button 
                   variant="outline"
-                  className="flex-1 mr-2"
+                  className="flex-1 bg-red-50 hover:bg-red-100 text-red-700 hover:text-red-800"
                   onClick={() => {
                     rejectMutation.mutate(selectedProduct.id);
                     setViewDialogOpen(false);
                   }}
                 >
-                  Reject
+                  <XCircle className="h-4 w-4 mr-2" />
+                  Reject Product
                 </Button>
                 <Button 
-                  className="flex-1 ml-2"
+                  className="flex-1 bg-green-600 hover:bg-green-700"
                   onClick={() => {
                     approveMutation.mutate(selectedProduct.id);
                     setViewDialogOpen(false);
                   }}
                 >
-                  Approve
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  Approve Product
                 </Button>
-              </>
-            )}
-            {selectedProduct && selectedProduct.status !== "pending" && (
-              <Button onClick={() => setViewDialogOpen(false)}>
-                Close
-              </Button>
+              </div>
             )}
           </DialogFooter>
         </DialogContent>
