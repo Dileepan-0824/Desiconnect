@@ -2,6 +2,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { createDefaultAdmin } from "./utils/defaultAdmin";
+import { createDefaultCustomer } from "./utils/defaultCustomer";
 
 const app = express();
 app.use(express.json());
