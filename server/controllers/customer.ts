@@ -195,7 +195,10 @@ export const createOrder = async (req: Request, res: Response) => {
       // Calculate total price
       const totalPrice = (parseFloat(String(product.price)) * item.quantity).toString();
       
-      // Create order
+      // Generate a tracking ID
+      const trackingId = `TR-${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
+      
+      // Create order with tracking ID
       const orderData = {
         productId: product.id,
         sellerId: product.sellerId,
@@ -206,6 +209,7 @@ export const createOrder = async (req: Request, res: Response) => {
         totalPrice,
         customerMessage: item.message || '',
         status: 'placed' as const,
+        trackingNumber: trackingId,
       };
       
       const order = await storage.createOrder(orderData);
