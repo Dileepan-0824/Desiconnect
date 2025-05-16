@@ -53,6 +53,11 @@ export default function AdminSellers() {
     queryKey: ["/api/admin/sellers"],
     enabled: !!token && !!user,
   });
+  
+  // Filter out rejected sellers
+  const activeSellers = Array.isArray(sellers) 
+    ? sellers.filter(seller => !seller.rejected)
+    : [];
 
   const form = useForm<CreateSellerForm>({
     resolver: zodResolver(createSellerSchema),
@@ -164,7 +169,7 @@ export default function AdminSellers() {
     onSuccess: () => {
       toast({
         title: "Seller Rejected",
-        description: "The seller has been rejected.",
+        description: "The seller has been rejected successfully.",
       });
       
       setRejectDialogOpen(false);
@@ -320,82 +325,83 @@ export default function AdminSellers() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {Array.isArray(sellers) && sellers.length > 0 ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Business Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Phone</TableHead>
-                  <TableHead>Joined</TableHead>
-                  <TableHead>Total Products</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {sellers.map((seller: any) => (
-                  <TableRow key={seller.id}>
-                    <TableCell className="font-medium">{seller.businessName}</TableCell>
-                    <TableCell>{seller.email}</TableCell>
-                    <TableCell>{seller.phoneNumber || "N/A"}</TableCell>
-                    <TableCell>
-                      {seller.createdAt 
-                        ? new Date(seller.createdAt).toLocaleDateString() 
-                        : "N/A"}
-                    </TableCell>
-                    <TableCell>{seller.totalProducts || 0}</TableCell>
-                    <TableCell>
-                      <div className="flex space-x-2">
-                        <Button 
-                          variant="outline" 
-                          size="icon" 
-                          onClick={() => handleViewSeller(seller)}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="icon"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <div className="flex flex-col gap-2 mt-2">
-                          {/* Status Indicator */}
-                          <div>
-                            {seller.rejected && (
-                              <div className="flex items-center space-x-1 text-red-700">
-                                <span className="w-3 h-3 bg-red-500 rounded-full"></span>
-                                <span className="font-semibold">REJECTED</span>
-                              </div>
-                            )}
-                            {seller.approved && !seller.rejected && (
-                              <div className="flex items-center space-x-1 text-green-700">
-                                <span className="w-3 h-3 bg-green-500 rounded-full"></span>
-                                <span className="font-semibold">APPROVED</span>
-                              </div>
-                            )}
-                            {!seller.approved && !seller.rejected && (
-                              <div className="flex items-center space-x-1 text-amber-700">
-                                <span className="w-3 h-3 bg-amber-500 rounded-full"></span>
-                                <span className="font-semibold">PENDING</span>
-                              </div>
-                            )}
-                          </div>
+          {Array.isArray(activeSellers) && activeSellers.length > 0 ? (
+            <>
+              <div className="mb-4 flex items-center">
+                <div className="text-sm text-muted-foreground">
+                  Showing active and pending sellers only. Rejected sellers are hidden.
+                </div>
+              </div>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Business Name</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Phone</TableHead>
+                    <TableHead>Joined</TableHead>
+                    <TableHead>Total Products</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {activeSellers.map((seller: any) => (
+                    <TableRow key={seller.id}>
+                      <TableCell className="font-medium">{seller.businessName}</TableCell>
+                      <TableCell>{seller.email}</TableCell>
+                      <TableCell>{seller.phoneNumber || "N/A"}</TableCell>
+                      <TableCell>
+                        {seller.createdAt 
+                          ? new Date(seller.createdAt).toLocaleDateString() 
+                          : "N/A"}
+                      </TableCell>
+                      <TableCell>{seller.totalProducts || 0}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center">
+                          <Button 
+                            variant="outline" 
+                            size="icon" 
+                            onClick={() => handleViewSeller(seller)}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="icon"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
                           
-                          {/* Action Buttons */}
-                          <div className="flex space-x-2">
-                            {!seller.approved && !seller.rejected && (
-                              <Button 
-                                variant="default"
-                                size="sm"
-                                onClick={() => handleApproveSeller(seller.id)}
-                                className="bg-green-600 hover:bg-green-700 text-white"
-                                disabled={processingId === seller.id}
-                              >
-                                {processingId === seller.id ? "Processing..." : "Approve"}
-                              </Button>
-                            )}
-                            {!seller.rejected && (
+                          <div className="flex flex-col gap-2 ml-2">
+                            {/* Status Indicator */}
+                            <div>
+                              {seller.approved && !seller.rejected && (
+                                <div className="flex items-center space-x-1 text-green-700">
+                                  <span className="w-3 h-3 bg-green-500 rounded-full"></span>
+                                  <span className="font-semibold">APPROVED</span>
+                                </div>
+                              )}
+                              {!seller.approved && !seller.rejected && (
+                                <div className="flex items-center space-x-1 text-amber-700">
+                                  <span className="w-3 h-3 bg-amber-500 rounded-full"></span>
+                                  <span className="font-semibold">PENDING</span>
+                                </div>
+                              )}
+                            </div>
+                            
+                            {/* Action Buttons */}
+                            <div className="flex space-x-2">
+                              {!seller.approved && !seller.rejected && (
+                                <Button 
+                                  variant="default"
+                                  size="sm"
+                                  onClick={() => handleApproveSeller(seller.id)}
+                                  className="bg-green-600 hover:bg-green-700 text-white"
+                                  disabled={processingId === seller.id}
+                                >
+                                  {processingId === seller.id ? "Processing..." : "Approve"}
+                                </Button>
+                              )}
+                              
                               <Button 
                                 variant="destructive"
                                 size="sm"
@@ -403,25 +409,25 @@ export default function AdminSellers() {
                                   setSelectedSeller(seller);
                                   setRejectDialogOpen(true);
                                 }}
-                                disabled={processingId === seller.id || seller.approved}
+                                disabled={processingId === seller.id || seller.rejected}
                               >
                                 Reject
                               </Button>
-                            )}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </>
           ) : (
             <div className="py-24 flex flex-col items-center justify-center text-center">
               <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium">No sellers found</h3>
+              <h3 className="text-lg font-medium">No active sellers found</h3>
               <p className="text-muted-foreground">
-                There are no sellers on the platform yet. Add your first seller using the "Add Seller" button.
+                There are no active sellers on the platform yet. Add your first seller using the "Add Seller" button.
               </p>
             </div>
           )}
@@ -532,7 +538,7 @@ export default function AdminSellers() {
           )}
           
           <DialogFooter>
-            <Button onClick={() => setViewDialogOpen(false)}>Close</Button>
+            <Button variant="outline" onClick={() => setViewDialogOpen(false)}>Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
