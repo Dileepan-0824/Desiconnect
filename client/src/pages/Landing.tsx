@@ -44,7 +44,7 @@ export default function Landing() {
             </CardContent>
             <CardFooter className="flex justify-center">
               <Button asChild className="w-full">
-                <Link href="/customer">Shop Now</Link>
+                <Link href="/login">Shop Now</Link>
               </Button>
             </CardFooter>
           </Card>
