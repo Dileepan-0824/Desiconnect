@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/use-auth";
 import { CartProvider } from "@/hooks/use-cart";
 import NotFound from "@/pages/not-found";
+import Landing from "@/pages/Landing";
 
 // Admin Pages
 import AdminLogin from "@/pages/admin/Login";
@@ -38,6 +39,9 @@ import CustomerForgotPassword from "@/pages/customer/ForgotPassword";
 function Router() {
   return (
     <Switch>
+      {/* Landing Page */}
+      <Route path="/" component={Landing} />
+
       {/* Admin Routes */}
       <Route path="/admin/login" component={AdminLogin} />
       <Route path="/admin" component={AdminDashboard} />
@@ -55,7 +59,7 @@ function Router() {
       <Route path="/seller/profile" component={SellerProfile} />
 
       {/* Customer Routes */}
-      <Route path="/" component={CustomerHome} />
+      <Route path="/customer" component={CustomerHome} />
       <Route path="/products" component={CustomerProducts} />
       <Route path="/products/category/:category" component={CustomerProducts} />
       <Route path="/products/:id" component={CustomerProductDetail} />
