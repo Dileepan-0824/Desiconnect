@@ -416,7 +416,7 @@ export default function AdminOrders() {
                 <div>
                   <h3 className="text-sm font-medium text-muted-foreground mb-2">Seller Information</h3>
                   <div className="border rounded-md p-3 bg-gray-50">
-                    <p className="font-medium">{selectedOrder.seller?.businessName || "Unknown"}</p>
+                    <p className="font-medium">{selectedOrder.product?.seller?.businessName || selectedOrder.seller?.businessName || "DesiConnect Seller"}</p>
                     {selectedOrder.seller?.email && (
                       <p className="text-sm">{selectedOrder.seller.email}</p>
                     )}
@@ -498,17 +498,27 @@ export default function AdminOrders() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
+                      {!Array.isArray(selectedOrder.items) && (
+                        <TableRow>
+                          <TableCell className="font-medium">{selectedOrder.product?.name || "Product"}</TableCell>
+                          <TableCell>₹{selectedOrder.product?.price?.toFixed(2) || "0.00"}</TableCell>
+                          <TableCell>{selectedOrder.quantity || 1}</TableCell>
+                          <TableCell className="text-right">
+                            ₹{((selectedOrder.product?.price || 0) * (selectedOrder.quantity || 1)).toFixed(2)}
+                          </TableCell>
+                        </TableRow>
+                      )}
                       {Array.isArray(selectedOrder.items) && selectedOrder.items.map((item: any, index: number) => (
                         <TableRow key={index}>
-                          <TableCell className="font-medium">{item.product?.name || "Unknown Product"}</TableCell>
+                          <TableCell className="font-medium">{item.product?.name || "Product"}</TableCell>
                           <TableCell>₹{item.price?.toFixed(2) || "0.00"}</TableCell>
                           <TableCell>{item.quantity}</TableCell>
                           <TableCell className="text-right">₹{(item.price * item.quantity).toFixed(2)}</TableCell>
                         </TableRow>
                       ))}
-                      <TableRow>
-                        <TableCell colSpan={3} className="text-right font-medium">Total</TableCell>
-                        <TableCell className="text-right font-bold">₹{selectedOrder.totalAmount?.toFixed(2) || "0.00"}</TableCell>
+                      <TableRow className="bg-gray-50">
+                        <TableCell colSpan={3} className="text-right font-medium">Total Amount</TableCell>
+                        <TableCell className="text-right font-bold">₹{selectedOrder.totalAmount?.toFixed(2) || ((selectedOrder.product?.price || 0) * (selectedOrder.quantity || 1)).toFixed(2)}</TableCell>
                       </TableRow>
                     </TableBody>
                   </Table>
