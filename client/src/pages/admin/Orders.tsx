@@ -415,6 +415,17 @@ export default function AdminOrders() {
                 </div>
                 
                 <div>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-2">Seller Information</h3>
+                  <div className="border rounded-md p-3 bg-gray-50">
+                    <p className="font-medium">{selectedOrder.seller?.businessName || "Unknown Seller"}</p>
+                    <p className="text-sm">{selectedOrder.seller?.email || "No email provided"}</p>
+                    <p className="mt-2 text-xs font-medium text-gray-500">Seller ID: #{selectedOrder.seller?.id || "N/A"}</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
                   <h3 className="text-sm font-medium text-muted-foreground mb-2">Order Information</h3>
                   <div className="border rounded-md p-4">
                     <div className="flex justify-between mb-2">
@@ -429,7 +440,7 @@ export default function AdminOrders() {
                     </div>
                     <div className="flex justify-between mb-2">
                       <p className="text-sm text-muted-foreground">Payment Method:</p>
-                      <p className="capitalize">{selectedOrder.paymentMethod?.replace('_', ' ') || "N/A"}</p>
+                      <p className="capitalize">{selectedOrder.paymentMethod?.replace('_', ' ') || "Cash on Delivery"}</p>
                     </div>
                     {selectedOrder.trackingNumber && (
                       <div className="flex justify-between mb-2">
@@ -445,6 +456,29 @@ export default function AdminOrders() {
                     )}
                   </div>
                 </div>
+                
+                {selectedOrder.status === "ready" && (
+                  <div>
+                    <h3 className="text-sm font-medium text-muted-foreground mb-2">Fulfillment Details</h3>
+                    <div className="border rounded-md p-3 bg-amber-50 border-amber-100">
+                      <p className="text-sm font-medium text-amber-800">Ready for shipping</p>
+                      <p className="text-sm text-amber-700 mt-1">Seller has confirmed the order is prepared and packaged</p>
+                      <div className="mt-3 pt-2 border-t border-amber-200">
+                        <Button 
+                          size="sm"
+                          className="mt-1 bg-amber-600 hover:bg-amber-700 text-white w-full"
+                          onClick={() => {
+                            setViewDialogOpen(false);
+                            handleAddTracking(selectedOrder);
+                          }}
+                        >
+                          <Truck className="h-4 w-4 mr-2" />
+                          Add Tracking Info
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
               
               {selectedOrder.customerMessage && (
