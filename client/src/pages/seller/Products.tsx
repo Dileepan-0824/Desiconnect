@@ -304,7 +304,16 @@ export default function SellerProducts() {
                   <span className="font-bold text-primary">{formatCurrency(product.price)}</span>
                   <div className="text-sm text-gray-600">Quantity: {product.quantity}</div>
                 </div>
-                <div className="flex justify-end space-x-2 mt-4">
+                <div className="flex flex-wrap justify-end gap-2 mt-4">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => openInventoryDialog(product)}
+                    className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
+                  >
+                    <Boxes className="h-4 w-4 mr-1" />
+                    Update Stock
+                  </Button>
                   <Button
                     variant="outline"
                     size="sm"
@@ -575,6 +584,68 @@ export default function SellerProducts() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Inventory Update Dialog */}
+      <Dialog open={inventoryDialogOpen} onOpenChange={setInventoryDialogOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Update Inventory</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-3">
+            {selectedProduct && (
+              <div className="flex items-center gap-3 border-b pb-3">
+                <div className="w-16 h-16 flex-shrink-0 bg-gray-100 rounded overflow-hidden">
+                  {selectedProduct.image ? (
+                    <img 
+                      src={selectedProduct.image}
+                      alt={selectedProduct.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <Package className="h-8 w-8 text-gray-400" />
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <h3 className="font-medium truncate">{selectedProduct.name}</h3>
+                  <p className="text-xs text-gray-500">Current stock: {selectedProduct.quantity}</p>
+                </div>
+              </div>
+            )}
+            
+            <div>
+              <Label htmlFor="inventory-quantity" className="text-base font-medium">Update Stock Quantity</Label>
+              <div className="mt-2">
+                <Input
+                  id="inventory-quantity"
+                  type="number"
+                  value={inventoryQuantity}
+                  onChange={(e) => setInventoryQuantity(e.target.value)}
+                  placeholder="Enter new quantity"
+                  min="0"
+                  step="1"
+                  className="text-lg"
+                />
+              </div>
+            </div>
+            
+            <div className="pt-2 text-sm text-gray-500">
+              <AlertCircle className="h-4 w-4 inline mr-1" />
+              Inventory changes will be immediately reflected across the platform
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setInventoryDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleUpdateInventory} className="bg-blue-600 hover:bg-blue-700">
+              Update Inventory
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </SellerLayout>
   );
 }
