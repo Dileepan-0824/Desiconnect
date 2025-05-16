@@ -15,7 +15,8 @@ import {
   CheckCircle,
   AlertCircle,
   ShoppingBag,
-  Plus
+  Plus,
+  ExternalLink
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { formatCurrency } from "@/lib/utils";
@@ -234,7 +235,7 @@ export default function CustomerOrders() {
                     <TableCell>{formatCurrency(order.totalPrice)}</TableCell>
                     <TableCell>{getStatusBadge(order.status)}</TableCell>
                     <TableCell>
-                      <div className="flex gap-2">
+                      <div className="flex flex-wrap gap-2">
                         <Button 
                           variant="outline" 
                           size="sm"
@@ -249,6 +250,25 @@ export default function CustomerOrders() {
                         >
                           Reorder
                         </Button>
+                        {order.trackingNumber ? (
+                          <Button 
+                            variant="default"
+                            size="sm"
+                            className="bg-primary hover:bg-primary-dark"
+                            onClick={() => window.open("https://www.indiapost.gov.in/_layouts/15/dop.portal.tracking/trackconsignment.aspx", "_blank")}
+                          >
+                            <ExternalLink className="h-4 w-4 mr-1" /> Track Order
+                          </Button>
+                        ) : order.status === "fulfilled" && (
+                          <Button 
+                            variant="default"
+                            size="sm"
+                            className="bg-primary hover:bg-primary-dark"
+                            onClick={() => window.open("https://www.indiapost.gov.in/_layouts/15/dop.portal.tracking/trackconsignment.aspx", "_blank")}
+                          >
+                            <ExternalLink className="h-4 w-4 mr-1" /> Track Order
+                          </Button>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>
