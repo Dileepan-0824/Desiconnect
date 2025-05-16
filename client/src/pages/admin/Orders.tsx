@@ -468,6 +468,8 @@ export default function AdminOrders() {
                               body: JSON.stringify({ status: 'fulfilled' })
                             })
                             .then(() => {
+                              // Remove the order from readyOrders state locally
+                              setReadyOrders(readyOrders.filter(order => order.id !== selectedOrder.id));
                               setViewDialogOpen(false);
                               toast({
                                 title: "Order Approved",
