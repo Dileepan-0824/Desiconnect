@@ -60,6 +60,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/admin/products/:id/reject", authenticate, authorizeAdmin, adminController.rejectProduct);
   app.delete("/api/admin/products/:id", authenticate, authorizeAdmin, adminController.deleteProduct);
   
+  // Test route for seller approval (DEVELOPMENT ONLY)
+  if (process.env.NODE_ENV === 'development') {
+    app.get("/api/test/approve-seller/:id", async (req, res) => {
+      try {
+        const sellerId = parseInt(req.params.id);
+        const seller = await storage.getSeller(sellerId);
+        
+        if (!seller) {
+          return res.status(404).json({ message: 'Seller not found' });
+        }
+        
+        const updatedSeller = await storage.updateSeller(sellerId, { 
+          approved: true, 
+          rejected: false 
+        });
+        
+        // Send approval notification email
+        const { sendSellerApprovalEmail } = require('./utils/email');
+        await sendSellerApprovalEmail(seller.email, seller.businessName);
+        
+        return res.status(200).json({
+          message: 'Seller approved successfully',
+          seller: updatedSeller
+        });
+      } catch (error) {
+        console.error('Error in test route:', error);
+        return res.status(500).json({ message: 'Server error' });
+      }
+    });
+  }
+  
   // Admin Order Management
   app.get("/api/admin/orders", authenticate, authorizeAdmin, adminController.getAllOrders);
   app.get("/api/admin/orders/status/:status", authenticate, authorizeAdmin, adminController.getOrdersByStatus);
