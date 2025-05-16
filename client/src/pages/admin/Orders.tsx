@@ -346,25 +346,14 @@ export default function AdminOrders() {
                           )}
                         </TableCell>
                         <TableCell>
-                          <div className="flex space-x-2">
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              onClick={() => handleViewOrder(order)}
-                            >
-                              <Eye className="h-4 w-4 mr-1" />
-                              View
-                            </Button>
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              className="text-blue-600"
-                              onClick={() => handleAddTracking(order)}
-                            >
-                              <Truck className="h-4 w-4 mr-1" />
-                              Add Tracking
-                            </Button>
-                          </div>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => handleViewOrder(order)}
+                          >
+                            <Eye className="h-4 w-4 mr-1" />
+                            View
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))}
