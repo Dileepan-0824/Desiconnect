@@ -79,21 +79,35 @@ export default function ProductDetail() {
         title: "Please login",
         description: "You need to be logged in to add items to your cart",
       });
-      navigate("/login");
+      navigate("/customer/login");
       return;
     }
 
     try {
-      // Get current cart
+      // Get current cart - include auth token
+      const token = localStorage.getItem('desiconnect_token');
       const response = await fetch("/api/customer/cart", {
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : ''
+        },
         credentials: "include",
       });
       
-      if (!response.ok) {
-        throw new Error("Failed to fetch cart");
-      }
+      let currentCart = { items: [] };
       
-      const currentCart = await response.json();
+      // Handle first-time cart creation
+      if (response.status === 401 || response.status === 404) {
+        // No cart exists yet, create a new one
+        console.log("Creating new cart");
+      } else if (!response.ok) {
+        throw new Error("Failed to fetch cart");
+      } else {
+        // Cart exists, use it
+        currentCart = await response.json();
+        if (!currentCart.items) {
+          currentCart.items = [];
+        }
+      }
       
       // Check if product is already in cart
       const existingItemIndex = currentCart.items.findIndex((item: any) => item.productId === productId);
@@ -110,7 +124,7 @@ export default function ProductDetail() {
       } else {
         // Add new item
         newItems = [
-          ...currentCart.items,
+          ...(Array.isArray(currentCart.items) ? currentCart.items : []),
           { 
             productId, 
             quantity, 
@@ -130,6 +144,7 @@ export default function ProductDetail() {
       // Reset message field
       setCustomerMessage("");
     } catch (error: any) {
+      console.error("Cart error:", error);
       toast({
         variant: "destructive",
         title: "Error",
