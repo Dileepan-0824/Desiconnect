@@ -192,11 +192,22 @@ export const createOrder = async (req: Request, res: Response) => {
         return res.status(400).json({ message: `Not enough quantity available for ${product.name}` });
       }
       
+      // Perform a final check of inventory quantity
+      const latestProduct = await storage.getProduct(item.productId);
+      
+      // Verify the product is still in stock with the requested quantity 
+      if (!latestProduct || latestProduct.quantity < item.quantity) {
+        return res.status(400).json({ 
+          message: `Product ${product.name} inventory has changed. Only ${latestProduct?.quantity || 0} units available.` 
+        });
+      }
+      
       // Calculate total price
       const totalPrice = (parseFloat(String(product.price)) * item.quantity).toString();
       
-      // Generate a tracking ID
-      const trackingId = `TR-${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
+      // Generate a tracking ID (format: TR-randomstring-date)
+      const date = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+      const trackingId = `TR-${Math.random().toString(36).substring(2, 7).toUpperCase()}-${date}`;
       
       // Create order with tracking ID
       const orderData = {
@@ -219,9 +230,9 @@ export const createOrder = async (req: Request, res: Response) => {
       const newQuantity = product.quantity - item.quantity;
       await storage.updateProduct(product.id, {
         quantity: newQuantity,
-        // Don't change the product status from approved when it's out of stock,
-        // but we'll check the quantity in the frontend to display "Out of Stock"
       });
+      
+      console.log(`Inventory updated for product ${product.id}. New quantity: ${newQuantity}`);
     }
     
     // Clear the cart
