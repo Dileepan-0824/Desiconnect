@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { getProductDetails, updateCart, getApprovedProducts } from "@/lib/api";
+import { getProductDetails, updateCart, getApprovedProducts, getCart } from "@/lib/api";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { formatCurrency } from "@/lib/utils";
@@ -84,29 +84,19 @@ export default function ProductDetail() {
     }
 
     try {
-      // Get current cart - include auth token
-      const token = localStorage.getItem('desiconnect_token');
-      const response = await fetch("/api/customer/cart", {
-        headers: {
-          'Authorization': token ? `Bearer ${token}` : ''
-        },
-        credentials: "include",
-      });
-      
-      let currentCart = { items: [] };
-      
-      // Handle first-time cart creation
-      if (response.status === 401 || response.status === 404) {
-        // No cart exists yet, create a new one
+      // Use the API client to get current cart with proper authentication
+      let currentCart;
+      try {
+        currentCart = await getCart();
+      } catch (error) {
+        // If cart doesn't exist or there's an error, start with an empty cart
         console.log("Creating new cart");
-      } else if (!response.ok) {
-        throw new Error("Failed to fetch cart");
-      } else {
-        // Cart exists, use it
-        currentCart = await response.json();
-        if (!currentCart.items) {
-          currentCart.items = [];
-        }
+        currentCart = { items: [] };
+      }
+      
+      // Ensure we have a valid items array
+      if (!currentCart.items) {
+        currentCart.items = [];
       }
       
       // Check if product is already in cart

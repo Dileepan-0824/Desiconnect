@@ -21,13 +21,15 @@ export const createDefaultCustomer = async (): Promise<void> => {
   const defaultPassword = await hashPassword("Customer@123");
   
   try {
-    await storage.createUser({
+    const customer = await storage.createUser({
       email: "customer@desiconnect.com",
       password: defaultPassword,
       name: "Test Customer", 
       address: "123 Test Street, Test City",
-      cartData: JSON.stringify({ items: [] }),
     });
+    
+    // Initialize empty cart for customer
+    await storage.updateUserCart(customer.id, JSON.stringify({ items: [] }));
     
     logger.info("Default customer account created successfully");
   } catch (error) {
