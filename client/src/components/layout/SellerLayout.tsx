@@ -54,7 +54,7 @@ export default function SellerLayout({ children }: SellerLayoutProps) {
       current: location === "/seller/orders",
     },
     {
-      name: "Business Profile",
+      name: "Update Profile",
       href: "/seller/profile",
       icon: User,
       current: location === "/seller/profile",
