@@ -159,15 +159,17 @@ export default function SellerOrders() {
                           )}
                           <div>
                             <div className="text-sm text-gray-900">{order.product?.name || "Unknown Product"}</div>
-                            <div className="text-xs text-gray-500">Qty: {order.quantity}</div>
-                            {order.customerMessage && (
+                            <div className="text-xs text-gray-500 font-medium">Qty: {order.quantity}</div>
+                            {order.customerMessage ? (
                               <button 
                                 onClick={() => viewCustomerMessage(order)}
-                                className="text-xs text-primary flex items-center mt-1"
+                                className="text-xs text-primary-600 flex items-center mt-1 bg-blue-50 px-2 py-1 rounded-md"
                               >
                                 <MessageSquare className="h-3 w-3 mr-1" />
-                                View message
+                                View customer message
                               </button>
+                            ) : (
+                              <div className="text-xs text-gray-400 mt-1">No customer message</div>
                             )}
                           </div>
                         </div>
@@ -224,9 +226,33 @@ export default function SellerOrders() {
           <DialogHeader>
             <DialogTitle>Customer Message</DialogTitle>
           </DialogHeader>
-          <div className="p-4 bg-gray-50 rounded-md">
-            <p className="font-medium text-sm mb-2">From: {selectedOrder?.customerName}</p>
-            <p className="text-gray-700">{selectedOrder?.customerMessage}</p>
+          <div className="space-y-4">
+            <div className="p-4 bg-blue-50 rounded-md border border-blue-100">
+              <div className="flex items-center mb-2">
+                <User className="h-4 w-4 text-blue-600 mr-2" />
+                <p className="font-medium text-blue-900">From: {selectedOrder?.customerName}</p>
+              </div>
+              <p className="text-gray-700 italic">"{selectedOrder?.customerMessage}"</p>
+            </div>
+            
+            <div className="p-4 bg-gray-50 rounded-md border border-gray-100">
+              <h4 className="text-sm font-medium mb-2 flex items-center">
+                <Package className="h-4 w-4 mr-2 text-gray-600" />
+                Order Details
+              </h4>
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div className="text-gray-500">Order ID:</div>
+                <div className="font-medium">#{selectedOrder?.id}</div>
+                <div className="text-gray-500">Product:</div>
+                <div className="font-medium">{selectedOrder?.product?.name}</div>
+                <div className="text-gray-500">Quantity:</div>
+                <div className="font-medium">{selectedOrder?.quantity} units</div>
+                <div className="text-gray-500">Address:</div>
+                <div className="font-medium">{selectedOrder?.address}</div>
+                <div className="text-gray-500">Tracking ID:</div>
+                <div className="font-medium text-blue-600">{selectedOrder?.trackingNumber || "Not assigned yet"}</div>
+              </div>
+            </div>
           </div>
           <DialogFooter>
             <Button onClick={() => setMessageDialogOpen(false)}>

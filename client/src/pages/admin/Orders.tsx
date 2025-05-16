@@ -395,10 +395,10 @@ export default function AdminOrders() {
                 <div>
                   <h3 className="text-sm font-medium text-muted-foreground mb-2">Customer Information</h3>
                   <div className="border rounded-md p-4">
-                    <p className="font-medium">{selectedOrder.user?.name || "Unknown"}</p>
+                    <p className="font-medium">{selectedOrder.customerName || selectedOrder.user?.name || "Unknown"}</p>
                     <p>{selectedOrder.user?.email || "No email provided"}</p>
-                    <p className="mt-2 text-sm">{selectedOrder.shippingAddress || "No shipping address"}</p>
-                    <p className="text-sm">{selectedOrder.city}, {selectedOrder.state} {selectedOrder.zipCode}</p>
+                    <p className="mt-2 text-sm font-medium">Shipping Address:</p>
+                    <p className="text-sm">{selectedOrder.address || selectedOrder.shippingAddress || "No shipping address provided"}</p>
                   </div>
                 </div>
                 
@@ -434,6 +434,15 @@ export default function AdminOrders() {
                   </div>
                 </div>
               </div>
+              
+              {selectedOrder.customerMessage && (
+                <div className="mb-4">
+                  <h3 className="text-sm font-medium text-muted-foreground mb-2">Customer Message</h3>
+                  <div className="p-4 bg-blue-50 rounded-md border border-blue-100">
+                    <p className="text-gray-700 italic">"{selectedOrder.customerMessage}"</p>
+                  </div>
+                </div>
+              )}
               
               <div>
                 <h3 className="text-sm font-medium text-muted-foreground mb-2">Order Items</h3>
