@@ -196,14 +196,25 @@ export const updateCustomerProfile = async (profileData: any) => {
 };
 
 export const getCart = async () => {
-  const res = await apiRequest("GET", "/api/customer/cart");
-  return res.json();
+  try {
+    const res = await apiRequest("GET", "/api/customer/cart");
+    return res.json();
+  } catch (error) {
+    console.error("Error fetching cart:", error);
+    // Return an empty cart structure rather than throwing
+    return { items: [] };
+  }
 };
 
 export const updateCart = async (cartData: any) => {
-  // Use the apiRequest function which handles auth token consistently
-  const res = await apiRequest("POST", "/api/customer/cart", cartData);
-  return res.json();
+  try {
+    // Use the apiRequest function which handles auth token consistently
+    const res = await apiRequest("POST", "/api/customer/cart", cartData);
+    return res.json();
+  } catch (error) {
+    console.error("Error updating cart:", error);
+    throw error;
+  }
 };
 
 export const createOrder = async (orderData: any) => {

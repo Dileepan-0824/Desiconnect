@@ -35,8 +35,25 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     setIsLoading(true);
     try {
+      // Get token from localStorage for authentication
+      const token = localStorage.getItem('desiconnect_token');
+      
+      if (!token) {
+        console.error('No authentication token found');
+        setCartItems([]);
+        return;
+      }
+      
+      // Use API with proper authentication
       const cartData = await getCart();
-      setCartItems(cartData.items || []);
+      
+      // Handle empty or invalid cart data
+      if (!cartData || !cartData.items) {
+        console.warn('Invalid cart data structure:', cartData);
+        setCartItems([]);
+      } else {
+        setCartItems(cartData.items);
+      }
     } catch (error) {
       console.error('Error fetching cart:', error);
       setCartItems([]);
