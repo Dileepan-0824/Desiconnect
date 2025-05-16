@@ -157,12 +157,11 @@ export default function CustomerHome() {
                   <div className="flex justify-between items-center mt-auto">
                     <span className="text-primary-600 font-bold">{formatCurrency(product.price)}</span>
                     <Button 
-                      onClick={() => addToCart(product.id)}
+                      onClick={() => navigate(`/products/${product.id}`)}
                       className="bg-primary hover:bg-primary-dark text-white flex items-center"
                       size="sm"
                     >
-                      <ShoppingCart className="h-4 w-4 mr-1" />
-                      Add to Cart
+                      View Details
                     </Button>
                   </div>
                 </div>
