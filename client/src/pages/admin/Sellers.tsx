@@ -359,41 +359,43 @@ export default function AdminSellers() {
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
-                        {!seller.approved && !seller.rejected && (
-                          <Button 
-                            variant="default"
-                            size="sm"
-                            onClick={() => handleApproveSeller(seller.id)}
-                            className="ml-2 bg-green-600 hover:bg-green-700"
-                            disabled={processingId === seller.id}
-                          >
-                            {processingId === seller.id ? "Processing..." : "Approve"}
-                          </Button>
-                        )}
-                        {!seller.rejected && (
-                          <Button 
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => {
-                              setSelectedSeller(seller);
-                              setRejectDialogOpen(true);
-                            }}
-                            className="ml-2"
-                            disabled={processingId === seller.id || seller.approved}
-                          >
-                            Reject
-                          </Button>
-                        )}
-                        {seller.rejected && (
-                          <span className="ml-2 px-2 py-1 text-xs bg-red-100 text-red-800 rounded-md">
-                            Rejected
-                          </span>
-                        )}
-                        {seller.approved && !seller.rejected && (
-                          <span className="ml-2 px-2 py-1 text-xs bg-green-100 text-green-800 rounded-md">
-                            Approved
-                          </span>
-                        )}
+                        <div className="flex flex-wrap gap-2 mt-1">
+                          {!seller.approved && !seller.rejected && (
+                            <Button 
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleApproveSeller(seller.id)}
+                              className="bg-green-50 text-green-700 border-green-300 hover:bg-green-100 hover:text-green-800"
+                              disabled={processingId === seller.id}
+                            >
+                              {processingId === seller.id ? "Processing..." : "✓ Approve Seller"}
+                            </Button>
+                          )}
+                          {!seller.rejected && (
+                            <Button 
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setSelectedSeller(seller);
+                                setRejectDialogOpen(true);
+                              }}
+                              className="bg-red-50 text-red-700 border-red-300 hover:bg-red-100 hover:text-red-800"
+                              disabled={processingId === seller.id || seller.approved}
+                            >
+                              {seller.approved ? "Cannot Reject" : "✕ Reject Seller"}
+                            </Button>
+                          )}
+                          {seller.rejected && (
+                            <span className="px-3 py-1 text-sm font-medium bg-red-100 text-red-800 rounded-md border border-red-200">
+                              Rejected
+                            </span>
+                          )}
+                          {seller.approved && !seller.rejected && (
+                            <span className="px-3 py-1 text-sm font-medium bg-green-100 text-green-800 rounded-md border border-green-200">
+                              Approved
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </TableCell>
                   </TableRow>
