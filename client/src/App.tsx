@@ -15,6 +15,7 @@ import AdminOrders from "@/pages/admin/Orders";
 
 // Seller Pages
 import SellerLogin from "@/pages/seller/Login";
+import SellerRegister from "@/pages/seller/Register";
 import SellerForgotPassword from "@/pages/seller/ForgotPassword";
 import SellerDashboard from "@/pages/seller/Dashboard";
 import SellerProducts from "@/pages/seller/Products";
@@ -44,6 +45,7 @@ function Router() {
 
       {/* Seller Routes */}
       <Route path="/seller/login" component={SellerLogin} />
+      <Route path="/seller/register" component={SellerRegister} />
       <Route path="/seller/forgot-password" component={SellerForgotPassword} />
       <Route path="/seller" component={SellerDashboard} />
       <Route path="/seller/products" component={SellerProducts} />
