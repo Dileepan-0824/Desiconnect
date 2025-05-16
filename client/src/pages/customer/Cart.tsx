@@ -92,7 +92,10 @@ export default function Cart() {
       };
       
       await updateCart({ items: updatedItems });
+      
+      // Invalidate both cart and product queries to ensure product quantities stay in sync
       queryClient.invalidateQueries({queryKey: ["/api/customer/cart"]});
+      queryClient.invalidateQueries({queryKey: ["/api/products"]});
       
       toast({
         title: "Cart updated",
@@ -113,7 +116,11 @@ export default function Cart() {
       const updatedItems = currentItems.filter((item: any) => item.productId !== productId);
       
       await updateCart({ items: updatedItems });
+      
+      // Invalidate both cart and product queries to ensure product quantities stay in sync
       queryClient.invalidateQueries({queryKey: ["/api/customer/cart"]});
+      queryClient.invalidateQueries({queryKey: ["/api/products"]});
+      queryClient.invalidateQueries({queryKey: [`/api/products/${productId}`]});
       
       toast({
         title: "Item removed",

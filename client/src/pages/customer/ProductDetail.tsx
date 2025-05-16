@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { getProductDetails, updateCart, getApprovedProducts, getCart } from "@/lib/api";
+import { queryClient } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/use-auth";
 import { useCart } from "@/hooks/use-cart";
 import { useToast } from "@/hooks/use-toast";
@@ -132,6 +133,10 @@ export default function ProductDetail() {
         
         // Refresh cart count in the header
         await refetchCart();
+        
+        // Invalidate the products cache to refresh product quantities
+        queryClient.invalidateQueries({ queryKey: ['/api/products'] });
+        queryClient.invalidateQueries({ queryKey: [`/api/products/${productId}`] });
       } catch (cartError) {
         console.error("Error updating cart:", cartError);
         toast({
