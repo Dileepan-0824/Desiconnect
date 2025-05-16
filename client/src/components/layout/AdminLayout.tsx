@@ -14,6 +14,7 @@ import {
   Bell,
   Search,
 } from "lucide-react";
+import adminLogo from "@/assets/admin-logo.png";
 import { cn } from "@/lib/utils";
 
 interface AdminLayoutProps {
@@ -88,8 +89,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       <div className="hidden md:flex md:w-64 md:flex-col">
         <div className="flex flex-col bg-gray-800">
           <div className="flex h-16 items-center px-4 bg-gray-900">
-            <div className="text-xl font-bold text-white font-heading">
-              DesiConnect <span className="text-primary">Admin</span>
+            <div className="flex items-center">
+              <img src={adminLogo} alt="DesiConnect Admin" className="h-10" />
             </div>
           </div>
 
@@ -145,8 +146,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarOpen(false)}></div>
           <div className="relative flex w-full max-w-xs flex-1 flex-col bg-gray-800">
             <div className="flex h-16 items-center justify-between px-4 bg-gray-900">
-              <div className="text-xl font-bold text-white font-heading">
-                DesiConnect <span className="text-primary">Admin</span>
+              <div className="flex items-center">
+                <img src={adminLogo} alt="DesiConnect Admin" className="h-10" />
               </div>
               <button
                 className="text-gray-300 hover:text-white"
