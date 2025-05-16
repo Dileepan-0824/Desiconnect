@@ -36,19 +36,32 @@ export default function SellerOrders() {
   const { toast } = useToast();
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [messageDialogOpen, setMessageDialogOpen] = useState(false);
+  const [confirmReadyDialogOpen, setConfirmReadyDialogOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
 
   const { data: orders, isLoading, refetch } = useQuery({
     queryKey: ["/api/seller/orders"],
   });
 
-  const handleMarkReady = async (orderId: number) => {
+  const openConfirmReadyDialog = (order: any) => {
+    setSelectedOrder(order);
+    setConfirmReadyDialogOpen(true);
+  };
+  
+  const handleMarkReady = async () => {
+    if (!selectedOrder) return;
+    
     try {
-      await markOrderReady(orderId);
+      setConfirmReadyDialogOpen(false);
+      
+      await markOrderReady(selectedOrder.id);
+      
       toast({
-        title: "Success",
-        description: "Order marked as ready for pickup",
+        title: "Order Sent for Admin Approval",
+        description: "Order has been marked as ready and sent to admin with all details for final approval",
       });
+      
+      // Refresh the orders list
       refetch();
     } catch (error: any) {
       toast({
