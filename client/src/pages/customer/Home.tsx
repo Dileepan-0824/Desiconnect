@@ -176,60 +176,42 @@ export default function CustomerHome() {
         <h2 className="text-2xl font-bold mb-6 font-heading">Shop by Category</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Category 1 - Apparel */}
-          <div className="relative rounded-lg overflow-hidden h-64 group">
-            <div 
-              className="absolute inset-0 bg-cover bg-center transition-transform group-hover:scale-105"
-              style={{ backgroundImage: "url('https://images.unsplash.com/photo-1485125639709-a60c3a500bf1?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=500&q=80')" }}
-            ></div>
-            <div className="absolute bottom-0 left-0 p-6">
-              <h3 className="text-black bg-white/70 px-3 py-1 rounded text-xl font-semibold mb-2">Apparel</h3>
-              <Button
-                variant="default" 
-                size="sm"
-                onClick={() => navigate("/products/category/apparel")}
-                className="bg-primary hover:bg-primary-dark text-white"
-              >
-                Shop Now
-              </Button>
-            </div>
+          <div className="relative rounded-lg overflow-hidden h-64 group bg-gray-50 flex flex-col justify-center items-center">
+            <h3 className="text-xl font-semibold mb-4">Apparel</h3>
+            <Button
+              variant="default" 
+              size="sm"
+              onClick={() => navigate("/products/category/apparel")}
+              className="bg-primary hover:bg-primary-dark text-white"
+            >
+              Shop Now
+            </Button>
           </div>
 
           {/* Category 2 - Accessories */}
-          <div className="relative rounded-lg overflow-hidden h-64 group">
-            <div 
-              className="absolute inset-0 bg-cover bg-center transition-transform group-hover:scale-105"
-              style={{ backgroundImage: "url('https://images.unsplash.com/photo-1601821765780-754fa98637c1?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=500&q=80')" }}
-            ></div>
-            <div className="absolute bottom-0 left-0 p-6">
-              <h3 className="text-black bg-white/70 px-3 py-1 rounded text-xl font-semibold mb-2">Accessories</h3>
-              <Button
-                variant="default" 
-                size="sm"
-                onClick={() => navigate("/products/category/accessories")}
-                className="bg-primary hover:bg-primary-dark text-white"
-              >
-                Shop Now
-              </Button>
-            </div>
+          <div className="relative rounded-lg overflow-hidden h-64 group bg-gray-50 flex flex-col justify-center items-center">
+            <h3 className="text-xl font-semibold mb-4">Accessories</h3>
+            <Button
+              variant="default" 
+              size="sm"
+              onClick={() => navigate("/products/category/accessories")}
+              className="bg-primary hover:bg-primary-dark text-white"
+            >
+              Shop Now
+            </Button>
           </div>
 
           {/* Category 3 - Festivities */}
-          <div className="relative rounded-lg overflow-hidden h-64 group">
-            <div 
-              className="absolute inset-0 bg-cover bg-center transition-transform group-hover:scale-105"
-              style={{ backgroundImage: "url('https://images.unsplash.com/photo-1615044010131-ee9cf73e5c47?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=500&q=80')" }}
-            ></div>
-            <div className="absolute bottom-0 left-0 p-6">
-              <h3 className="text-black bg-white/70 px-3 py-1 rounded text-xl font-semibold mb-2">Festivities</h3>
-              <Button
-                variant="default" 
-                size="sm"
-                onClick={() => navigate("/products/category/festivities")}
-                className="bg-primary hover:bg-primary-dark text-white"
-              >
-                Shop Now
-              </Button>
-            </div>
+          <div className="relative rounded-lg overflow-hidden h-64 group bg-gray-50 flex flex-col justify-center items-center">
+            <h3 className="text-xl font-semibold mb-4">Festivities</h3>
+            <Button
+              variant="default" 
+              size="sm"
+              onClick={() => navigate("/products/category/festivities")}
+              className="bg-primary hover:bg-primary-dark text-white"
+            >
+              Shop Now
+            </Button>
           </div>
         </div>
       </div>
