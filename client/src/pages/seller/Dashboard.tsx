@@ -1,22 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell
-} from "recharts";
 import { 
   Package, 
   ShoppingCart, 
@@ -33,39 +21,6 @@ export default function SellerDashboard() {
     queryKey: ["/api/seller/stats"],
     enabled: !!token && !!user,
   });
-
-  // Sample data for charts (will be replaced with actual data from API)
-  const [orderData, setOrderData] = useState([
-    { name: 'Jan', orders: 4 },
-    { name: 'Feb', orders: 6 },
-    { name: 'Mar', orders: 8 },
-    { name: 'Apr', orders: 12 },
-    { name: 'May', orders: 10 },
-    { name: 'Jun', orders: 15 },
-  ]);
-
-  const [productData, setProductData] = useState([
-    { name: 'Clothing', value: 35 },
-    { name: 'Jewelry', value: 20 },
-    { name: 'Home Decor', value: 15 },
-    { name: 'Handicrafts', value: 25 },
-    { name: 'Others', value: 5 },
-  ]);
-
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
-
-  useEffect(() => {
-    if (stats) {
-      // Update the chart data with actual stats when available
-      if (stats.monthlyOrders) {
-        setOrderData(stats.monthlyOrders);
-      }
-      
-      if (stats.productCategories) {
-        setProductData(stats.productCategories);
-      }
-    }
-  }, [stats]);
 
   if (isLoading) {
     return (
@@ -141,66 +96,7 @@ export default function SellerDashboard() {
         </Card>
       </div>
 
-      {/* Charts */}
-      <div className="grid gap-4 md:grid-cols-2 mt-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Monthly Orders</CardTitle>
-            <CardDescription>
-              Number of orders received per month
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={orderData}
-                margin={{
-                  top: 5,
-                  right: 30,
-                  left: 20,
-                  bottom: 5,
-                }}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="orders" fill="#8884d8" />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader>
-            <CardTitle>Product Categories</CardTitle>
-            <CardDescription>
-              Distribution of your products by category
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={productData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {productData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </div>
+
 
       {/* Recent Orders */}
       <div className="mt-6">
