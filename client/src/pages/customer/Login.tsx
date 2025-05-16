@@ -57,7 +57,7 @@ export default function CustomerLogin() {
         description: "Welcome back to DesiConnect!",
       });
       
-      navigate("/");
+      navigate("/customer");
     } catch (error) {
       toast({
         title: "Login Failed",
