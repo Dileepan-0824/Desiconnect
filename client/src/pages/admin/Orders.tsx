@@ -416,7 +416,7 @@ export default function AdminOrders() {
                 <div>
                   <h3 className="text-sm font-medium text-muted-foreground mb-2">Seller Information</h3>
                   <div className="border rounded-md p-3 bg-gray-50">
-                    <p className="font-medium">{selectedOrder.product?.seller?.businessName || selectedOrder.seller?.businessName || "DesiConnect Seller"}</p>
+                    <p className="font-medium">{selectedOrder.product?.seller?.businessName || selectedOrder.seller?.businessName || selectedOrder.sellerName || "Seller #" + selectedOrder.sellerId}</p>
                     {selectedOrder.seller?.email && (
                       <p className="text-sm">{selectedOrder.seller.email}</p>
                     )}
