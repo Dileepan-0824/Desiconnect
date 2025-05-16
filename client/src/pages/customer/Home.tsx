@@ -15,6 +15,7 @@ import {
   Star,
   ArrowRight
 } from "lucide-react";
+import bannerImage from "@/assets/banner.png";
 
 export default function CustomerHome() {
   const [_, navigate] = useLocation();
@@ -87,13 +88,15 @@ export default function CustomerHome() {
   return (
     <CustomerLayout>
       {/* Hero Section */}
-      <div className="relative bg-primary text-white mb-8 rounded-lg overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-primary-dark/80 to-primary/40"></div>
-        <div className="container mx-auto px-6 py-12 md:py-24 relative z-10 flex flex-col items-start">
-          <h1 className="text-3xl md:text-5xl font-bold mb-4 font-heading">Authentic Indian Craftsmanship</h1>
-          <p className="text-lg md:text-xl mb-8 max-w-2xl">
-            Explore our handcrafted collection of authentic Indian products, directly from artisans.
-          </p>
+      <div className="relative mb-8 rounded-lg overflow-hidden">
+        <div className="w-full">
+          <img 
+            src={bannerImage} 
+            alt="DESI CONNECT - HOUSE OF INDIAN ECSTASY" 
+            className="w-full object-cover"
+          />
+        </div>
+        <div className="absolute bottom-6 right-6 md:bottom-10 md:right-10">
           <Button
             onClick={() => navigate("/products")}
             className="bg-white text-primary hover:bg-gray-100 font-medium py-2 px-6 rounded-lg transition"
@@ -101,10 +104,6 @@ export default function CustomerHome() {
             Shop Now
           </Button>
         </div>
-        <div className="absolute inset-0 w-full h-full bg-cover bg-center" style={{ 
-          backgroundImage: "url('https://images.unsplash.com/photo-1506812574058-fc75fa93fead?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&h=600&q=80')",
-          opacity: 0.7
-        }}></div>
       </div>
 
       {/* Featured Products */}
