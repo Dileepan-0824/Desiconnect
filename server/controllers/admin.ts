@@ -4,7 +4,7 @@ import { hashPassword } from '../utils/password';
 import { insertSellerSchema } from '@shared/schema';
 import { ZodError } from 'zod';
 import { fromZodError } from 'zod-validation-error';
-import { sendWelcomeEmail } from '../utils/email';
+import { sendWelcomeEmail, sendSellerApprovalEmail, sendSellerRejectionEmail } from '../utils/email';
 
 // Get admin dashboard stats
 export const getAdminStats = async (req: Request, res: Response) => {
@@ -333,8 +333,8 @@ export const approveSeller = async (req: Request, res: Response) => {
       rejected: false 
     });
     
-    // Send approval notification email in production
-    // await sendSellerApprovalEmail(seller.email);
+    // Send approval notification email
+    await sendSellerApprovalEmail(seller.email, seller.businessName);
     
     return res.status(200).json({
       message: 'Seller approved successfully',
@@ -360,8 +360,8 @@ export const rejectSeller = async (req: Request, res: Response) => {
       rejected: true 
     });
     
-    // Send rejection notification email in production
-    // await sendSellerRejectionEmail(seller.email);
+    // Send rejection notification email
+    await sendSellerRejectionEmail(seller.email, seller.businessName);
     
     return res.status(200).json({
       message: 'Seller rejected successfully',
