@@ -128,8 +128,14 @@ export const getSellerProducts = async () => {
 };
 
 export const createProduct = async (formData: FormData) => {
+  // Get the auth token from localStorage
+  const token = localStorage.getItem('desiconnect_token');
+  
   const res = await fetch("/api/seller/products", {
     method: "POST",
+    headers: {
+      'Authorization': token ? `Bearer ${token}` : '',
+    },
     body: formData,
     credentials: "include",
   });
@@ -143,8 +149,14 @@ export const createProduct = async (formData: FormData) => {
 };
 
 export const updateProduct = async (id: number, formData: FormData) => {
+  // Get the auth token from localStorage
+  const token = localStorage.getItem('desiconnect_token');
+  
   const res = await fetch(`/api/seller/products/${id}`, {
     method: "PUT",
+    headers: {
+      'Authorization': token ? `Bearer ${token}` : '',
+    },
     body: formData,
     credentials: "include",
   });
