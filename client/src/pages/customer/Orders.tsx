@@ -191,6 +191,13 @@ export default function CustomerOrders() {
                         <Button 
                           variant="outline" 
                           size="sm"
+                          onClick={() => navigate(`/orders/${order.id}`)}
+                        >
+                          View Details
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
                           onClick={() => navigate(`/products/${order.productId}`)}
                         >
                           Reorder
