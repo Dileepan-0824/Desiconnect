@@ -119,7 +119,7 @@ export default function SellerOrders() {
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tracking ID</th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                   </tr>
@@ -176,10 +176,14 @@ export default function SellerOrders() {
                         {formatCurrency(order.totalPrice)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-500 flex items-center">
-                          <Calendar className="h-4 w-4 mr-1 text-gray-400" />
-                          {formatDate(order.createdAt)}
-                        </div>
+                        {order.trackingNumber ? (
+                          <div className="text-sm text-blue-600 font-medium flex items-center">
+                            <Truck className="h-4 w-4 mr-1" />
+                            {order.trackingNumber}
+                          </div>
+                        ) : (
+                          <span className="text-gray-400 text-sm">Not assigned</span>
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <Badge className={getOrderStatusBadgeColor(order.status)}>

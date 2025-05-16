@@ -48,13 +48,13 @@ export default function CustomerCheckout() {
   });
 
   useEffect(() => {
-    if (cartData) {
+    if (cartData && cartData.items) {
       const items = Array.isArray(cartData.items) ? cartData.items : [];
       setCartItems(items);
       
       // Calculate total
       const total = items.reduce(
-        (sum: number, item: any) => sum + (item.price * item.quantity),
+        (sum: number, item: any) => sum + (parseFloat(item.price || '0') * item.quantity),
         0
       );
       setCartTotal(total);
@@ -113,14 +113,17 @@ export default function CustomerCheckout() {
       return;
     }
 
+    // Create full address string from form fields
+    const fullAddress = `${data.shippingAddress}, ${data.city}, ${data.state} ${data.zipCode}`;
+    
+    // Prepare order data with the complete address
     const orderData = {
-      ...data,
+      address: fullAddress,
       items: cartItems.map(item => ({
-        productId: item.id,
+        productId: item.productId,
         quantity: item.quantity,
-        price: item.price
-      })),
-      totalAmount: cartTotal
+        message: item.message
+      }))
     };
 
     createOrderMutation.mutate(orderData);
