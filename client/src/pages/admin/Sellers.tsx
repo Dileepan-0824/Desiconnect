@@ -359,42 +359,56 @@ export default function AdminSellers() {
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <div className="flex flex-wrap gap-2 mt-1">
-                          {!seller.approved && !seller.rejected && (
-                            <Button 
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleApproveSeller(seller.id)}
-                              className="bg-green-50 text-green-700 border-green-300 hover:bg-green-100 hover:text-green-800"
-                              disabled={processingId === seller.id}
-                            >
-                              {processingId === seller.id ? "Processing..." : "✓ Approve Seller"}
-                            </Button>
-                          )}
-                          {!seller.rejected && (
-                            <Button 
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                setSelectedSeller(seller);
-                                setRejectDialogOpen(true);
-                              }}
-                              className="bg-red-50 text-red-700 border-red-300 hover:bg-red-100 hover:text-red-800"
-                              disabled={processingId === seller.id || seller.approved}
-                            >
-                              {seller.approved ? "Cannot Reject" : "✕ Reject Seller"}
-                            </Button>
-                          )}
-                          {seller.rejected && (
-                            <span className="px-3 py-1 text-sm font-medium bg-red-100 text-red-800 rounded-md border border-red-200">
-                              Rejected
-                            </span>
-                          )}
-                          {seller.approved && !seller.rejected && (
-                            <span className="px-3 py-1 text-sm font-medium bg-green-100 text-green-800 rounded-md border border-green-200">
-                              Approved
-                            </span>
-                          )}
+                        <div className="flex flex-col gap-2 mt-2">
+                          {/* Status Indicator */}
+                          <div>
+                            {seller.rejected && (
+                              <div className="flex items-center space-x-1 text-red-700">
+                                <span className="w-3 h-3 bg-red-500 rounded-full"></span>
+                                <span className="font-semibold">REJECTED</span>
+                              </div>
+                            )}
+                            {seller.approved && !seller.rejected && (
+                              <div className="flex items-center space-x-1 text-green-700">
+                                <span className="w-3 h-3 bg-green-500 rounded-full"></span>
+                                <span className="font-semibold">APPROVED</span>
+                              </div>
+                            )}
+                            {!seller.approved && !seller.rejected && (
+                              <div className="flex items-center space-x-1 text-amber-700">
+                                <span className="w-3 h-3 bg-amber-500 rounded-full"></span>
+                                <span className="font-semibold">PENDING</span>
+                              </div>
+                            )}
+                          </div>
+                          
+                          {/* Action Buttons */}
+                          <div className="flex space-x-2">
+                            {!seller.approved && !seller.rejected && (
+                              <Button 
+                                variant="default"
+                                size="sm"
+                                onClick={() => handleApproveSeller(seller.id)}
+                                className="bg-green-600 hover:bg-green-700 text-white"
+                                disabled={processingId === seller.id}
+                              >
+                                {processingId === seller.id ? "Processing..." : "Approve"}
+                              </Button>
+                            )}
+                            {!seller.rejected && (
+                              <Button 
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedSeller(seller);
+                                  setRejectDialogOpen(true);
+                                }}
+                                disabled={processingId === seller.id || seller.approved}
+                              >
+                                Reject
+                              </Button>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </TableCell>
