@@ -30,6 +30,7 @@ import {
   CheckCircle,
   Truck,
   MessageSquare,
+  AlertCircle,
 } from "lucide-react";
 
 export default function SellerOrders() {
@@ -210,7 +211,7 @@ export default function SellerOrders() {
                           <Button
                             variant="default"
                             size="sm"
-                            onClick={() => handleMarkReady(order.id)}
+                            onClick={() => openConfirmReadyDialog(order)}
                           >
                             <CheckCircle className="h-4 w-4 mr-1" />
                             Mark Ready
@@ -270,6 +271,61 @@ export default function SellerOrders() {
           <DialogFooter>
             <Button onClick={() => setMessageDialogOpen(false)}>
               Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirm Mark Ready Dialog */}
+      <Dialog open={confirmReadyDialogOpen} onOpenChange={setConfirmReadyDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Send to Admin for Approval</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="p-4 bg-amber-50 rounded-md border border-amber-100">
+              <div className="flex items-center mb-2">
+                <CheckCircle className="h-4 w-4 text-amber-600 mr-2" />
+                <p className="font-medium text-amber-900">Order Approval Process</p>
+              </div>
+              <p className="text-gray-700 text-sm">
+                This order will be marked as "Ready" and sent to the admin with complete order details including:
+              </p>
+              <ul className="mt-2 text-sm text-gray-700 space-y-1 pl-5 list-disc">
+                <li>Full customer information and address</li>
+                <li>Your seller details and contact information</li>
+                <li>Complete product and order information</li>
+                <li>Any customer messages and special requests</li>
+              </ul>
+            </div>
+            
+            {selectedOrder && (
+              <div className="p-4 bg-gray-50 rounded-md border border-gray-100">
+                <h4 className="text-sm font-medium mb-2 flex items-center">
+                  <Package className="h-4 w-4 mr-2 text-gray-600" />
+                  Order Details
+                </h4>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div className="text-gray-500">Order ID:</div>
+                  <div className="font-medium">#{selectedOrder.id}</div>
+                  <div className="text-gray-500">Customer:</div>
+                  <div className="font-medium">{selectedOrder.customerName}</div>
+                  <div className="text-gray-500">Product:</div>
+                  <div className="font-medium">{selectedOrder.product?.name}</div>
+                  <div className="text-gray-500">Quantity:</div>
+                  <div className="font-medium">{selectedOrder.quantity} units</div>
+                  <div className="text-gray-500">Amount:</div>
+                  <div className="font-medium">{formatCurrency(selectedOrder.totalPrice)}</div>
+                </div>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmReadyDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleMarkReady} className="bg-green-600 hover:bg-green-700">
+              Confirm & Send to Admin
             </Button>
           </DialogFooter>
         </DialogContent>
