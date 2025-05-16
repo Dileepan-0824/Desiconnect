@@ -52,7 +52,7 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header */}
-      <header className="bg-orange-500 shadow-sm sticky top-0 z-10">
+      <header className="bg-white shadow-sm sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4">
           <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
             <div className="flex justify-between items-center">
@@ -64,13 +64,13 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
               
               <div className="flex items-center space-x-2 md:hidden">
                 <Link href="/cart">
-                  <a className="text-white relative">
+                  <a className="text-gray-700 relative">
                     <ShoppingCart className="h-6 w-6" />
                   </a>
                 </Link>
                 <button
                   onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                  className="text-white"
+                  className="text-gray-700"
                 >
                   {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
                 </button>
@@ -98,7 +98,7 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
                   <div className="relative">
                     <button
                       onClick={() => setUserMenuOpen(!userMenuOpen)}
-                      className="flex items-center text-white hover:text-gray-100"
+                      className="flex items-center text-gray-700 hover:text-primary"
                     >
                       <User className="h-5 w-5 mr-2" />
                       <span>{user?.name || 'Account'}</span>
@@ -123,7 +123,7 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
                   </div>
                 ) : (
                   <Link href="/login">
-                    <a className="flex items-center text-white hover:text-gray-100">
+                    <a className="flex items-center text-gray-700 hover:text-primary">
                       <User className="h-5 w-5 mr-2" />
                       <span>Login</span>
                     </a>
@@ -132,7 +132,7 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
               </div>
               
               <Link href="/cart">
-                <a className="text-white hover:text-gray-100 relative">
+                <a className="text-gray-700 hover:text-primary relative">
                   <ShoppingCart className="h-5 w-5 mr-2 inline-block" />
                   <span>Cart</span>
                 </a>
@@ -192,8 +192,8 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
                   <Link href={category.path}>
                     <a 
                       className={cn(
-                        "whitespace-nowrap text-white hover:text-gray-100",
-                        location === category.path && "text-white font-medium underline"
+                        "whitespace-nowrap text-gray-600 hover:text-primary",
+                        location === category.path && "text-primary font-medium"
                       )}
                     >
                       {category.name}
