@@ -19,7 +19,7 @@ export default function Landing() {
             Welcome to DesiConnect
           </h2>
           <p className="mt-4 text-xl text-gray-600">
-            A comprehensive e-commerce platform designed to streamline online selling and buying experiences.
+            Local roots, global shelves
           </p>
         </div>
         
@@ -105,7 +105,7 @@ export default function Landing() {
         <div className="container mx-auto px-4">
           <div className="text-center">
             <p>&copy; {new Date().getFullYear()} DesiConnect. All rights reserved.</p>
-            <p className="mt-2 text-gray-400">A comprehensive e-commerce platform for South Asian products</p>
+            <p className="mt-2 text-gray-400">Local roots, global shelves</p>
           </div>
         </div>
       </footer>
