@@ -215,9 +215,8 @@ export const createOrder = async (req: Request, res: Response) => {
       const newQuantity = product.quantity - item.quantity;
       await storage.updateProduct(product.id, {
         quantity: newQuantity,
-        // If quantity becomes zero, update product status in the future
-        // This is commented out because we don't want to remove approved products automatically
-        // status: newQuantity <= 0 ? 'outofstock' as ProductStatus : product.status 
+        // Don't change the product status from approved when it's out of stock,
+        // but we'll check the quantity in the frontend to display "Out of Stock"
       });
     }
     
