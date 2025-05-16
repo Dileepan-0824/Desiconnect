@@ -216,52 +216,7 @@ export default function CustomerHome() {
         </div>
       </div>
 
-      {/* Testimonials */}
-      <div className="bg-gray-50 py-12">
-        <div className="container mx-auto px-4">
-          <h2 className="text-2xl font-bold mb-8 text-center font-heading">What Our Customers Say</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Testimonial 1 */}
-            <div className="bg-white p-6 rounded-lg shadow-sm">
-              <div className="flex items-center mb-4">
-                <div className="text-yellow-400 flex">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-5 w-5 fill-current" />
-                  ))}
-                </div>
-              </div>
-              <p className="text-gray-600 mb-4">"The silk saree I ordered was even more beautiful in person. The quality is exceptional and the price was very reasonable."</p>
-              <div className="font-medium">Priya Sharma</div>
-            </div>
 
-            {/* Testimonial 2 */}
-            <div className="bg-white p-6 rounded-lg shadow-sm">
-              <div className="flex items-center mb-4">
-                <div className="text-yellow-400 flex">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-5 w-5 fill-current" />
-                  ))}
-                </div>
-              </div>
-              <p className="text-gray-600 mb-4">"I ordered the Diwali décor set and was impressed by the craftsmanship. Everything arrived well-packaged and on time for the festival."</p>
-              <div className="font-medium">Rahul Mehta</div>
-            </div>
-
-            {/* Testimonial 3 */}
-            <div className="bg-white p-6 rounded-lg shadow-sm">
-              <div className="flex items-center mb-4">
-                <div className="text-yellow-400 flex">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-5 w-5 fill-current" />
-                  ))}
-                </div>
-              </div>
-              <p className="text-gray-600 mb-4">"I love that I can get authentic Indian products delivered to my doorstep. The jewelry pieces I bought were exactly as described and arrived quickly."</p>
-              <div className="font-medium">Anjali Patel</div>
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* Why Choose Us */}
       <div className="container mx-auto px-4 py-12">
