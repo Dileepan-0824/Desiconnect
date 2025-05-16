@@ -12,6 +12,7 @@ import {
   ChevronDown,
   LogOut,
 } from "lucide-react";
+import logoImage from "@/assets/logo.png";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -56,7 +57,9 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
           <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
             <div className="flex justify-between items-center">
               <Link href="/">
-                <a className="text-2xl font-bold text-primary font-heading">DesiConnect</a>
+                <a className="flex items-center">
+                  <img src={logoImage} alt="DesiConnect Logo" className="h-12 mr-2" />
+                </a>
               </Link>
               
               <div className="flex items-center space-x-2 md:hidden">
