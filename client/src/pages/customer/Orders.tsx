@@ -198,7 +198,7 @@ export default function CustomerOrders() {
                   <TableHead>Product</TableHead>
                   <TableHead>Date</TableHead>
                   <TableHead>Amount</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead>Tracking ID</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -233,7 +233,16 @@ export default function CustomerOrders() {
                         : 'N/A'}
                     </TableCell>
                     <TableCell>{formatCurrency(order.totalPrice)}</TableCell>
-                    <TableCell>{getStatusBadge(order.status)}</TableCell>
+                    <TableCell>
+                      {order.trackingNumber ? (
+                        <div className="flex items-center">
+                          <Truck className="h-4 w-4 mr-1 text-blue-600" />
+                          <span className="text-blue-600 font-medium">{order.trackingNumber}</span>
+                        </div>
+                      ) : (
+                        <span className="text-gray-400 text-sm">Not available</span>
+                      )}
+                    </TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-2">
                         <Button 
