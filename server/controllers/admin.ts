@@ -221,6 +221,16 @@ export const deleteProduct = async (req: Request, res: Response) => {
       return res.status(404).json({ message: 'Product not found' });
     }
     
+    // Check if the product is referenced in any orders
+    const orders = await storage.getAllOrders();
+    const productInOrders = orders.some(order => order.productId === productId);
+    
+    if (productInOrders) {
+      return res.status(400).json({ 
+        message: 'Cannot delete product that is referenced in orders. Consider deactivating it instead.' 
+      });
+    }
+    
     await storage.deleteProduct(productId);
     
     return res.status(200).json({
