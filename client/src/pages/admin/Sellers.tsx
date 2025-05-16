@@ -1,453 +1,360 @@
-import React, { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import AdminLayout from "@/components/layout/AdminLayout";
-import { getAllSellers, createSeller, updateSeller } from "@/lib/api";
-import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAuth } from "@/hooks/use-auth";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import {
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
+import { AlertCircle, Edit, Eye, Plus } from "lucide-react";
+import { 
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
+  DialogTrigger,
 } from "@/components/ui/dialog";
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { z } from "zod";
+import { 
+  Form, 
+  FormControl, 
+  FormField, 
+  FormItem, 
+  FormLabel, 
+  FormMessage 
+} from "@/components/ui/form";
+import { useToast } from "@/hooks/use-toast";
+import { queryClient } from "@/lib/queryClient";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { Users, PlusCircle, Edit, UserPlus } from "lucide-react";
-import { queryClient } from "@/lib/queryClient";
+import { z } from "zod";
 
-const sellerFormSchema = z.object({
+const createSellerSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
-  password: z.string().min(6, { message: "Password must be at least 6 characters" }).optional(),
-  businessName: z.string().min(2, { message: "Business name is required" }),
-  businessAddress: z.string().optional(),
-  warehouseAddress: z.string().optional(),
-  zipCode: z.string().optional(),
-  phone: z.string().optional(),
-  gst: z.string().optional(),
+  businessName: z.string().min(3, { message: "Business name must be at least 3 characters" }),
+  phoneNumber: z.string().min(10, { message: "Please enter a valid phone number" }),
+  address: z.string().min(5, { message: "Address must be at least 5 characters" }),
 });
 
-type SellerFormValues = z.infer<typeof sellerFormSchema>;
+type CreateSellerForm = z.infer<typeof createSellerSchema>;
 
 export default function AdminSellers() {
+  const { user, token } = useAuth();
   const { toast } = useToast();
-  const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedSeller, setSelectedSeller] = useState<any>(null);
-
-  const { data: sellers, isLoading, refetch } = useQuery({
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  
+  // Fetch all sellers
+  const { data: sellers, isLoading } = useQuery({
     queryKey: ["/api/admin/sellers"],
+    enabled: !!token && !!user,
   });
 
-  const createForm = useForm<SellerFormValues>({
-    resolver: zodResolver(sellerFormSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-      businessName: "",
-      businessAddress: "",
-      warehouseAddress: "",
-      zipCode: "",
-      phone: "",
-      gst: "",
-    },
-  });
-
-  const editForm = useForm<SellerFormValues>({
-    resolver: zodResolver(sellerFormSchema.partial()),
+  const form = useForm<CreateSellerForm>({
+    resolver: zodResolver(createSellerSchema),
     defaultValues: {
       email: "",
       businessName: "",
-      businessAddress: "",
-      warehouseAddress: "",
-      zipCode: "",
-      phone: "",
-      gst: "",
+      phoneNumber: "",
+      address: "",
     },
   });
 
-  const onCreateSellerSubmit = async (values: SellerFormValues) => {
-    try {
-      await createSeller(values);
-      toast({
-        title: "Success",
-        description: "Seller account created successfully",
+  // Create seller mutation
+  const createSellerMutation = useMutation({
+    mutationFn: async (data: CreateSellerForm) => {
+      const response = await fetch("/api/admin/sellers", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify(data),
       });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to create seller");
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Seller Created",
+        description: "The seller account has been created successfully.",
+      });
+      
       setCreateDialogOpen(false);
-      createForm.reset();
-      refetch();
-    } catch (error: any) {
+      form.reset();
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/sellers"] });
+    },
+    onError: (error) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to create seller account",
+        title: "Creation Failed",
+        description: error instanceof Error ? error.message : "Failed to create seller",
         variant: "destructive",
       });
     }
-  };
+  });
 
-  const onEditSellerSubmit = async (values: SellerFormValues) => {
-    try {
-      await updateSeller(selectedSeller.id, values);
-      toast({
-        title: "Success",
-        description: "Seller account updated successfully",
-      });
-      setEditDialogOpen(false);
-      queryClient.invalidateQueries({queryKey: ["/api/admin/sellers"]});
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update seller account",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const openEditDialog = (seller: any) => {
+  const handleViewSeller = (seller: any) => {
     setSelectedSeller(seller);
-    editForm.reset({
-      email: seller.email,
-      businessName: seller.businessName,
-      businessAddress: seller.businessAddress || "",
-      warehouseAddress: seller.warehouseAddress || "",
-      zipCode: seller.zipCode || "",
-      phone: seller.phone || "",
-      gst: seller.gst || "",
-    });
-    setEditDialogOpen(true);
+    setViewDialogOpen(true);
   };
 
-  return (
-    <AdminLayout>
-      <div className="px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">Sellers</h1>
-          <Button onClick={() => setCreateDialogOpen(true)}>
-            <UserPlus className="h-4 w-4 mr-2" />
-            Add Seller
-          </Button>
-        </div>
+  const onCreateSellerSubmit = (data: CreateSellerForm) => {
+    createSellerMutation.mutate(data);
+  };
 
-        <div className="mt-8 bg-white shadow-sm rounded-lg overflow-hidden">
-          {isLoading ? (
-            <div className="py-12 text-center">Loading sellers...</div>
-          ) : !sellers || sellers.length === 0 ? (
-            <div className="py-12 text-center">
-              <Users className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-              <h3 className="text-lg font-medium text-gray-900">No sellers found</h3>
-              <p className="mt-1 text-sm text-gray-500">Get started by creating a new seller account.</p>
-              <div className="mt-6">
-                <Button onClick={() => setCreateDialogOpen(true)}>
-                  <PlusCircle className="h-4 w-4 mr-2" />
-                  Add Seller
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Business Name</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">GST</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {sellers.map((seller: any) => (
-                    <tr key={seller.id}>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{seller.businessName}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-500">{seller.email}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-500">{seller.phone || "-"}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-500">{seller.gst || "-"}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="text-primary"
-                          onClick={() => openEditDialog(seller)}
-                        >
-                          <Edit className="h-4 w-4 mr-1" /> Edit
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+  if (isLoading) {
+    return (
+      <div className="p-8">
+        <div className="flex items-center justify-center">
+          <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
         </div>
       </div>
+    );
+  }
 
-      {/* Create Seller Dialog */}
-      <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Create New Seller Account</DialogTitle>
-          </DialogHeader>
-          <Form {...createForm}>
-            <form onSubmit={createForm.handleSubmit(onCreateSellerSubmit)} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+  return (
+    <div className="p-8">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Sellers Management</h1>
+          <p className="text-muted-foreground">
+            Manage and onboard sellers on the platform
+          </p>
+        </div>
+        <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="flex items-center">
+              <Plus className="mr-2 h-4 w-4" />
+              Add Seller
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Create New Seller</DialogTitle>
+              <DialogDescription>
+                Add a new seller to the platform. They will receive an email with login credentials.
+              </DialogDescription>
+            </DialogHeader>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onCreateSellerSubmit)} className="space-y-4">
                 <FormField
-                  control={createForm.control}
+                  control={form.control}
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email Address <span className="text-red-500">*</span></FormLabel>
+                      <FormLabel>Email</FormLabel>
                       <FormControl>
-                        <Input placeholder="email@example.com" {...field} />
+                        <Input 
+                          placeholder="Enter seller's email" 
+                          {...field} 
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={createForm.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Password <span className="text-red-500">*</span></FormLabel>
-                      <FormControl>
-                        <Input type="password" placeholder="******" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={createForm.control}
-                  name="businessName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Business Name <span className="text-red-500">*</span></FormLabel>
-                      <FormControl>
-                        <Input placeholder="Business Name" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={createForm.control}
-                  name="phone"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Phone Number</FormLabel>
-                      <FormControl>
-                        <Input placeholder="+91 9876543210" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={createForm.control}
-                  name="gst"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>GST Number</FormLabel>
-                      <FormControl>
-                        <Input placeholder="22AAAAA0000A1Z5" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={createForm.control}
-                  name="zipCode"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Zip Code</FormLabel>
-                      <FormControl>
-                        <Input placeholder="400001" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              
-              <FormField
-                control={createForm.control}
-                name="businessAddress"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Business Address</FormLabel>
-                    <FormControl>
-                      <Textarea placeholder="Business Address" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={createForm.control}
-                name="warehouseAddress"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Warehouse Address</FormLabel>
-                    <FormControl>
-                      <Textarea placeholder="Warehouse Address" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
                 
-              <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setCreateDialogOpen(false)}>
-                  Cancel
-                </Button>
-                <Button type="submit">Create Seller</Button>
-              </DialogFooter>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
-
-      {/* Edit Seller Dialog */}
-      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Edit Seller Account</DialogTitle>
-          </DialogHeader>
-          <Form {...editForm}>
-            <form onSubmit={editForm.handleSubmit(onEditSellerSubmit)} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
-                  control={editForm.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email Address</FormLabel>
-                      <FormControl>
-                        <Input placeholder="email@example.com" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={editForm.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Password (leave blank to keep current)</FormLabel>
-                      <FormControl>
-                        <Input type="password" placeholder="******" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={editForm.control}
+                  control={form.control}
                   name="businessName"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Business Name</FormLabel>
                       <FormControl>
-                        <Input placeholder="Business Name" {...field} />
+                        <Input 
+                          placeholder="Enter business name" 
+                          {...field} 
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
+                
                 <FormField
-                  control={editForm.control}
-                  name="phone"
+                  control={form.control}
+                  name="phoneNumber"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Phone Number</FormLabel>
                       <FormControl>
-                        <Input placeholder="+91 9876543210" {...field} />
+                        <Input 
+                          placeholder="Enter phone number" 
+                          {...field} 
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
+                
                 <FormField
-                  control={editForm.control}
-                  name="gst"
+                  control={form.control}
+                  name="address"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>GST Number</FormLabel>
+                      <FormLabel>Address</FormLabel>
                       <FormControl>
-                        <Input placeholder="22AAAAA0000A1Z5" {...field} />
+                        <Input 
+                          placeholder="Enter business address" 
+                          {...field} 
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={editForm.control}
-                  name="zipCode"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Zip Code</FormLabel>
-                      <FormControl>
-                        <Input placeholder="400001" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                
+                <DialogFooter>
+                  <Button 
+                    type="submit" 
+                    disabled={createSellerMutation.isPending}
+                  >
+                    {createSellerMutation.isPending ? "Creating..." : "Create Seller"}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </Form>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>All Sellers</CardTitle>
+          <CardDescription>
+            View and manage all sellers on the platform
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {Array.isArray(sellers) && sellers.length > 0 ? (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Business Name</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Phone</TableHead>
+                  <TableHead>Joined</TableHead>
+                  <TableHead>Total Products</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {sellers.map((seller: any) => (
+                  <TableRow key={seller.id}>
+                    <TableCell className="font-medium">{seller.businessName}</TableCell>
+                    <TableCell>{seller.email}</TableCell>
+                    <TableCell>{seller.phoneNumber || "N/A"}</TableCell>
+                    <TableCell>
+                      {seller.createdAt 
+                        ? new Date(seller.createdAt).toLocaleDateString() 
+                        : "N/A"}
+                    </TableCell>
+                    <TableCell>{seller.totalProducts || 0}</TableCell>
+                    <TableCell>
+                      <div className="flex space-x-2">
+                        <Button 
+                          variant="outline" 
+                          size="icon" 
+                          onClick={() => handleViewSeller(seller)}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="icon"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : (
+            <div className="py-24 flex flex-col items-center justify-center text-center">
+              <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-medium">No sellers found</h3>
+              <p className="text-muted-foreground">
+                There are no sellers on the platform yet. Add your first seller using the "Add Seller" button.
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Seller Detail Dialog */}
+      <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Seller Details</DialogTitle>
+            <DialogDescription>
+              Detailed information about the seller
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedSeller && (
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-lg font-bold">{selectedSeller.businessName}</h3>
+                <p className="text-sm text-muted-foreground">
+                  Joined on {selectedSeller.createdAt 
+                    ? new Date(selectedSeller.createdAt).toLocaleDateString() 
+                    : "N/A"}
+                </p>
               </div>
               
-              <FormField
-                control={editForm.control}
-                name="businessAddress"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Business Address</FormLabel>
-                    <FormControl>
-                      <Textarea placeholder="Business Address" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={editForm.control}
-                name="warehouseAddress"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Warehouse Address</FormLabel>
-                    <FormControl>
-                      <Textarea placeholder="Warehouse Address" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-muted-foreground">Email</p>
+                  <p>{selectedSeller.email}</p>
+                </div>
                 
-              <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setEditDialogOpen(false)}>
-                  Cancel
-                </Button>
-                <Button type="submit">Update Seller</Button>
-              </DialogFooter>
-            </form>
-          </Form>
+                <div>
+                  <p className="text-sm text-muted-foreground">Phone</p>
+                  <p>{selectedSeller.phoneNumber || "N/A"}</p>
+                </div>
+                
+                <div className="col-span-2">
+                  <p className="text-sm text-muted-foreground">Address</p>
+                  <p>{selectedSeller.address || "N/A"}</p>
+                </div>
+              </div>
+              
+              <div>
+                <p className="text-sm text-muted-foreground">Business Details</p>
+                <div className="grid grid-cols-2 gap-4 mt-2">
+                  <div>
+                    <p className="text-sm font-medium">Total Products</p>
+                    <p>{selectedSeller.totalProducts || 0}</p>
+                  </div>
+                  
+                  <div>
+                    <p className="text-sm font-medium">Total Orders</p>
+                    <p>{selectedSeller.totalOrders || 0}</p>
+                  </div>
+                  
+                  <div>
+                    <p className="text-sm font-medium">Total Revenue</p>
+                    <p>₹{selectedSeller.totalRevenue?.toLocaleString() || "0"}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          <DialogFooter>
+            <Button onClick={() => setViewDialogOpen(false)}>Close</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
-    </AdminLayout>
+    </div>
   );
 }

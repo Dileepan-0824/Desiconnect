@@ -1,258 +1,435 @@
-import React, { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import AdminLayout from "@/components/layout/AdminLayout";
-import { getPendingProducts, getApprovedProducts, approveProduct, rejectProduct, deleteProduct } from "@/lib/api";
-import { useToast } from "@/hooks/use-toast";
-import { Badge } from "@/components/ui/badge";
+import { useState } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAuth } from "@/hooks/use-auth";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { formatCurrency, getProductStatusBadgeColor } from "@/lib/utils";
-import { Package, Check, X, Trash, AlertCircle } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { 
+  CheckCircle, 
+  XCircle, 
+  AlertCircle, 
+  Eye,
+  Trash
+} from "lucide-react";
+import { 
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
+import { queryClient } from "@/lib/queryClient";
 
 export default function AdminProducts() {
+  const { user, token } = useAuth();
   const { toast } = useToast();
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState("pending");
-
-  const {
-    data: pendingProducts,
-    isLoading: pendingLoading,
-    refetch: refetchPending,
-  } = useQuery({
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  
+  // Fetch pending products
+  const { data: pendingProducts, isLoading: isPendingLoading } = useQuery({
     queryKey: ["/api/admin/products/pending"],
+    enabled: !!token && !!user,
   });
 
-  const {
-    data: approvedProducts,
-    isLoading: approvedLoading,
-    refetch: refetchApproved,
-  } = useQuery({
+  // Fetch all products
+  const { data: allProducts, isLoading: isAllLoading } = useQuery({
     queryKey: ["/api/products"],
+    enabled: !!token && !!user,
   });
 
-  const handleApproveProduct = async (productId: number) => {
-    try {
-      await approveProduct(productId);
-      toast({
-        title: "Success",
-        description: "Product has been approved.",
+  // Approve product mutation
+  const approveMutation = useMutation({
+    mutationFn: async (productId: number) => {
+      const response = await fetch(`/api/admin/products/${productId}/approve`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        }
       });
-      refetchPending();
-      refetchApproved();
-    } catch (error: any) {
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to approve product");
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to approve product.",
+        title: "Product Approved",
+        description: "The product has been approved and is now visible to customers.",
+      });
+      
+      // Invalidate both pending products and all products queries
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/products/pending"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Approval Failed",
+        description: error instanceof Error ? error.message : "Failed to approve product",
         variant: "destructive",
       });
     }
-  };
+  });
 
-  const handleRejectProduct = async (productId: number) => {
-    try {
-      await rejectProduct(productId);
-      toast({
-        title: "Success",
-        description: "Product has been rejected.",
+  // Reject product mutation
+  const rejectMutation = useMutation({
+    mutationFn: async (productId: number) => {
+      const response = await fetch(`/api/admin/products/${productId}/reject`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        }
       });
-      refetchPending();
-    } catch (error: any) {
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to reject product");
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to reject product.",
+        title: "Product Rejected",
+        description: "The product has been rejected and will not be visible to customers.",
+      });
+      
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/products/pending"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Rejection Failed",
+        description: error instanceof Error ? error.message : "Failed to reject product",
         variant: "destructive",
       });
     }
-  };
+  });
 
-  const openDeleteDialog = (product: any) => {
+  // Delete product mutation
+  const deleteMutation = useMutation({
+    mutationFn: async (productId: number) => {
+      const response = await fetch(`/api/admin/products/${productId}`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to delete product");
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Product Deleted",
+        description: "The product has been permanently deleted.",
+      });
+      
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/products/pending"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Deletion Failed",
+        description: error instanceof Error ? error.message : "Failed to delete product",
+        variant: "destructive",
+      });
+    }
+  });
+
+  const handleViewProduct = (product: any) => {
     setSelectedProduct(product);
-    setDeleteDialogOpen(true);
+    setViewDialogOpen(true);
   };
 
-  const handleDeleteProduct = async () => {
-    try {
-      await deleteProduct(selectedProduct.id);
-      toast({
-        title: "Success",
-        description: "Product has been deleted.",
-      });
-      refetchPending();
-      refetchApproved();
-      setDeleteDialogOpen(false);
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to delete product.",
-        variant: "destructive",
-      });
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "pending":
+        return <Badge variant="outline" className="bg-yellow-100 text-yellow-800">Pending</Badge>;
+      case "approved":
+        return <Badge variant="outline" className="bg-green-100 text-green-800">Approved</Badge>;
+      case "rejected":
+        return <Badge variant="outline" className="bg-red-100 text-red-800">Rejected</Badge>;
+      default:
+        return <Badge variant="outline">{status}</Badge>;
     }
   };
 
-  const ProductCard = ({ product, isPending = false }: { product: any, isPending?: boolean }) => (
-    <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-      <div className="h-48 bg-gray-100 relative">
-        {product.image ? (
-          <img
-            src={product.image}
-            alt={product.name}
-            className="h-full w-full object-cover"
-          />
-        ) : (
-          <div className="flex h-full items-center justify-center">
-            <Package className="h-12 w-12 text-gray-400" />
-          </div>
-        )}
-        <Badge
-          className={`absolute top-2 right-2 ${getProductStatusBadgeColor(product.status)}`}
-        >
-          {product.status}
-        </Badge>
-      </div>
-      <div className="p-4">
-        <h3 className="text-lg font-semibold mb-1 truncate">{product.name}</h3>
-        <p className="text-sm text-gray-500 mb-2">
-          Seller: {product.sellerBusinessName || "Unknown"}
-        </p>
-        <p className="text-sm text-gray-600 mb-4 line-clamp-2">{product.description}</p>
-        <div className="flex justify-between items-center">
-          <span className="font-bold text-primary">{formatCurrency(product.price)}</span>
-          <div className="flex space-x-2">
-            {isPending ? (
-              <>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="bg-green-50 text-green-700 hover:bg-green-100 border-green-200"
-                  onClick={() => handleApproveProduct(product.id)}
-                >
-                  <Check className="h-4 w-4 mr-1" />
-                  Approve
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="bg-red-50 text-red-700 hover:bg-red-100 border-red-200"
-                  onClick={() => handleRejectProduct(product.id)}
-                >
-                  <X className="h-4 w-4 mr-1" />
-                  Reject
-                </Button>
-              </>
-            ) : (
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-red-600 hover:bg-red-50"
-                onClick={() => openDeleteDialog(product)}
-              >
-                <Trash className="h-4 w-4 mr-1" />
-                Delete
-              </Button>
-            )}
-          </div>
+  if (isPendingLoading && isAllLoading) {
+    return (
+      <div className="p-8">
+        <div className="flex items-center justify-center">
+          <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
         </div>
       </div>
-    </div>
-  );
+    );
+  }
 
   return (
-    <AdminLayout>
-      <div className="px-4 sm:px-6 lg:px-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Manage Products</h1>
-
-        <Tabs
-          defaultValue="pending"
-          value={activeTab}
-          onValueChange={setActiveTab}
-          className="w-full"
-        >
-          <TabsList className="grid w-full grid-cols-2 mb-6">
-            <TabsTrigger value="pending">Pending Approval</TabsTrigger>
-            <TabsTrigger value="approved">Approved Products</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="pending">
-            {pendingLoading ? (
-              <div className="text-center py-12">
-                <div className="spinner mb-4"></div>
-                <p>Loading pending products...</p>
-              </div>
-            ) : !pendingProducts || pendingProducts.length === 0 ? (
-              <div className="text-center py-12 bg-white rounded-lg shadow-sm">
-                <div className="flex flex-col items-center">
-                  <AlertCircle className="h-12 w-12 text-gray-400 mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900">No pending products</h3>
-                  <p className="mt-1 text-sm text-gray-500">All products have been reviewed.</p>
-                </div>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {pendingProducts.map((product: any) => (
-                  <ProductCard key={product.id} product={product} isPending={true} />
-                ))}
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="approved">
-            {approvedLoading ? (
-              <div className="text-center py-12">
-                <div className="spinner mb-4"></div>
-                <p>Loading approved products...</p>
-              </div>
-            ) : !approvedProducts || approvedProducts.length === 0 ? (
-              <div className="text-center py-12 bg-white rounded-lg shadow-sm">
-                <div className="flex flex-col items-center">
-                  <Package className="h-12 w-12 text-gray-400 mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900">No approved products</h3>
-                  <p className="mt-1 text-sm text-gray-500">Approved products will appear here.</p>
-                </div>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {approvedProducts
-                  .filter((product: any) => product.status === "approved")
-                  .map((product: any) => (
-                    <ProductCard key={product.id} product={product} isPending={false} />
-                  ))}
-              </div>
-            )}
-          </TabsContent>
-        </Tabs>
+    <div className="p-8">
+      <div className="flex flex-col space-y-4">
+        <h1 className="text-3xl font-bold tracking-tight">Products Management</h1>
+        <p className="text-muted-foreground">
+          Review, approve, and manage all products on the platform.
+        </p>
       </div>
 
-      {/* Delete Product Confirmation Dialog */}
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will permanently delete the product &quot;{selectedProduct?.name}&quot;. This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteProduct}
-              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </AdminLayout>
+      <Tabs defaultValue="pending" className="mt-6">
+        <TabsList className="grid w-full grid-cols-2 mb-4">
+          <TabsTrigger value="pending">Pending Approval ({Array.isArray(pendingProducts) ? pendingProducts.length : 0})</TabsTrigger>
+          <TabsTrigger value="all">All Products ({Array.isArray(allProducts) ? allProducts.length : 0})</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="pending">
+          <Card>
+            <CardHeader>
+              <CardTitle>Pending Products</CardTitle>
+              <CardDescription>
+                Review and approve new products submitted by sellers
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {Array.isArray(pendingProducts) && pendingProducts.length > 0 ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Product Name</TableHead>
+                      <TableHead>Seller</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead>Price</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {pendingProducts.map((product: any) => (
+                      <TableRow key={product.id}>
+                        <TableCell className="font-medium">{product.name}</TableCell>
+                        <TableCell>{product.seller?.businessName || "Unknown Seller"}</TableCell>
+                        <TableCell>{product.category}</TableCell>
+                        <TableCell>₹{product.price?.toFixed(2) || "0.00"}</TableCell>
+                        <TableCell>{getStatusBadge(product.status)}</TableCell>
+                        <TableCell>
+                          <div className="flex space-x-2">
+                            <Button 
+                              variant="outline" 
+                              size="icon" 
+                              onClick={() => handleViewProduct(product)}
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="icon"
+                              className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                              onClick={() => approveMutation.mutate(product.id)}
+                              disabled={approveMutation.isPending}
+                            >
+                              <CheckCircle className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="icon"
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              onClick={() => rejectMutation.mutate(product.id)}
+                              disabled={rejectMutation.isPending}
+                            >
+                              <XCircle className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <div className="py-24 flex flex-col items-center justify-center text-center">
+                  <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-medium">No pending products</h3>
+                  <p className="text-muted-foreground">
+                    There are no products awaiting approval at this time.
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="all">
+          <Card>
+            <CardHeader>
+              <CardTitle>All Products</CardTitle>
+              <CardDescription>
+                View and manage all products on the platform
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {Array.isArray(allProducts) && allProducts.length > 0 ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Product Name</TableHead>
+                      <TableHead>Seller</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead>Price</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {allProducts.map((product: any) => (
+                      <TableRow key={product.id}>
+                        <TableCell className="font-medium">{product.name}</TableCell>
+                        <TableCell>{product.seller?.businessName || "Unknown Seller"}</TableCell>
+                        <TableCell>{product.category}</TableCell>
+                        <TableCell>₹{product.price?.toFixed(2) || "0.00"}</TableCell>
+                        <TableCell>{getStatusBadge(product.status)}</TableCell>
+                        <TableCell>
+                          <div className="flex space-x-2">
+                            <Button 
+                              variant="outline" 
+                              size="icon" 
+                              onClick={() => handleViewProduct(product)}
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="icon"
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              onClick={() => deleteMutation.mutate(product.id)}
+                              disabled={deleteMutation.isPending}
+                            >
+                              <Trash className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <div className="py-24 flex flex-col items-center justify-center text-center">
+                  <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-medium">No products found</h3>
+                  <p className="text-muted-foreground">
+                    There are no products on the platform yet.
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+
+      {/* Product Detail Dialog */}
+      <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Product Details</DialogTitle>
+            <DialogDescription>
+              Detailed information about the product
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedProduct && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                {selectedProduct.imageUrl ? (
+                  <img 
+                    src={selectedProduct.imageUrl} 
+                    alt={selectedProduct.name} 
+                    className="w-full h-auto rounded-lg object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-48 bg-muted rounded-lg flex items-center justify-center">
+                    <p className="text-muted-foreground">No image available</p>
+                  </div>
+                )}
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <h3 className="font-bold text-xl">{selectedProduct.name}</h3>
+                  <p className="text-muted-foreground">{selectedProduct.seller?.businessName}</p>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Category</p>
+                    <p>{selectedProduct.category}</p>
+                  </div>
+                  
+                  <div>
+                    <p className="text-sm text-muted-foreground">Price</p>
+                    <p className="font-bold">₹{selectedProduct.price?.toFixed(2) || "0.00"}</p>
+                  </div>
+                  
+                  <div>
+                    <p className="text-sm text-muted-foreground">Stock</p>
+                    <p>{selectedProduct.stockQuantity || 0} units</p>
+                  </div>
+                  
+                  <div>
+                    <p className="text-sm text-muted-foreground">Status</p>
+                    <p>{getStatusBadge(selectedProduct.status)}</p>
+                  </div>
+                </div>
+                
+                <div>
+                  <p className="text-sm text-muted-foreground">Description</p>
+                  <p className="text-sm">{selectedProduct.description}</p>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          <DialogFooter className="flex justify-between">
+            {selectedProduct && selectedProduct.status === "pending" && (
+              <>
+                <Button 
+                  variant="outline"
+                  className="flex-1 mr-2"
+                  onClick={() => {
+                    rejectMutation.mutate(selectedProduct.id);
+                    setViewDialogOpen(false);
+                  }}
+                >
+                  Reject
+                </Button>
+                <Button 
+                  className="flex-1 ml-2"
+                  onClick={() => {
+                    approveMutation.mutate(selectedProduct.id);
+                    setViewDialogOpen(false);
+                  }}
+                >
+                  Approve
+                </Button>
+              </>
+            )}
+            {selectedProduct && selectedProduct.status !== "pending" && (
+              <Button onClick={() => setViewDialogOpen(false)}>
+                Close
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }

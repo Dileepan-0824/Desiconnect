@@ -1,251 +1,550 @@
-import React, { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import AdminLayout from "@/components/layout/AdminLayout";
-import { getAllOrders, getOrdersByStatus, addTrackingToOrder } from "@/lib/api";
-import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAuth } from "@/hooks/use-auth";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import {
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { 
+  AlertCircle, 
+  Eye,
+  Truck
+} from "lucide-react";
+import { 
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
+import { 
+  Form, 
+  FormControl, 
+  FormField, 
+  FormItem, 
+  FormLabel, 
+  FormMessage 
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { formatCurrency, getOrderStatusBadgeColor, formatDate } from "@/lib/utils";
-import { ShoppingBag, Truck, Package, User, Calendar, AlertCircle } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { format } from "date-fns";
+
+const trackingSchema = z.object({
+  trackingNumber: z.string().min(5, { message: "Tracking number must be at least 5 characters" }),
+  carrier: z.string().min(2, { message: "Carrier name is required" }),
+});
+
+type TrackingForm = z.infer<typeof trackingSchema>;
 
 export default function AdminOrders() {
+  const { user, token } = useAuth();
   const { toast } = useToast();
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [trackingDialog, setTrackingDialog] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
-  const [trackingNumber, setTrackingNumber] = useState("");
-
-  const {
-    data: allOrders,
-    isLoading,
-    refetch,
-  } = useQuery({
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [trackingDialogOpen, setTrackingDialogOpen] = useState(false);
+  
+  // Fetch all orders
+  const { data: allOrders, isLoading: isAllOrdersLoading } = useQuery({
     queryKey: ["/api/admin/orders"],
+    enabled: !!token && !!user,
   });
 
-  const { data: filteredOrders, refetch: refetchFiltered } = useQuery({
-    queryKey: [`/api/admin/orders/status/${statusFilter}`],
-    enabled: statusFilter !== "all",
+  // Fetch pending orders
+  const { data: pendingOrders, isLoading: isPendingOrdersLoading } = useQuery({
+    queryKey: ["/api/admin/orders/status/placed"],
+    enabled: !!token && !!user,
   });
 
-  const orders = statusFilter === "all" ? allOrders : filteredOrders;
+  // Fetch ready to ship orders
+  const { data: readyOrders, isLoading: isReadyOrdersLoading } = useQuery({
+    queryKey: ["/api/admin/orders/status/ready"],
+    enabled: !!token && !!user,
+  });
 
-  const handleStatusFilterChange = (value: string) => {
-    setStatusFilter(value);
-    if (value !== "all") {
-      refetchFiltered();
-    }
-  };
+  const form = useForm<TrackingForm>({
+    resolver: zodResolver(trackingSchema),
+    defaultValues: {
+      trackingNumber: "",
+      carrier: "",
+    },
+  });
 
-  const openTrackingDialog = (order: any) => {
-    setSelectedOrder(order);
-    setTrackingNumber("");
-    setTrackingDialog(true);
-  };
-
-  const handleAddTracking = async () => {
-    if (!trackingNumber.trim()) {
-      toast({
-        title: "Error",
-        description: "Please enter a tracking number.",
-        variant: "destructive",
+  // Add tracking mutation
+  const addTrackingMutation = useMutation({
+    mutationFn: async ({ orderId, data }: { orderId: number, data: TrackingForm }) => {
+      const response = await fetch(`/api/admin/orders/${orderId}/tracking`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify(data),
       });
-      return;
-    }
-
-    try {
-      await addTrackingToOrder(selectedOrder.id, trackingNumber);
-      toast({
-        title: "Success",
-        description: "Tracking number added and order fulfilled.",
-      });
-      setTrackingDialog(false);
-      queryClient.invalidateQueries({queryKey: ["/api/admin/orders"]});
-      if (statusFilter !== "all") {
-        queryClient.invalidateQueries({queryKey: [`/api/admin/orders/status/${statusFilter}`]});
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to add tracking information");
       }
-    } catch (error: any) {
+      
+      return response.json();
+    },
+    onSuccess: () => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to add tracking number.",
+        title: "Tracking Info Added",
+        description: "Tracking information has been added to the order successfully.",
+      });
+      
+      setTrackingDialogOpen(false);
+      form.reset();
+      
+      // Invalidate relevant queries
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/orders"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/orders/status/ready"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/orders/status/placed"] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Failed to Add Tracking",
+        description: error instanceof Error ? error.message : "Failed to add tracking information",
         variant: "destructive",
       });
     }
+  });
+
+  const handleViewOrder = (order: any) => {
+    setSelectedOrder(order);
+    setViewDialogOpen(true);
   };
 
-  return (
-    <AdminLayout>
-      <div className="px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Orders</h1>
-          <div className="w-48">
-            <Select value={statusFilter} onValueChange={handleStatusFilterChange}>
-              <SelectTrigger>
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Orders</SelectItem>
-                <SelectItem value="placed">Placed</SelectItem>
-                <SelectItem value="ready">Ready for Pickup</SelectItem>
-                <SelectItem value="fulfilled">Fulfilled</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
+  const handleAddTracking = (order: any) => {
+    setSelectedOrder(order);
+    setTrackingDialogOpen(true);
+  };
 
-        <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-          {isLoading ? (
-            <div className="py-12 text-center">
-              <div className="spinner mb-4"></div>
-              <p>Loading orders...</p>
-            </div>
-          ) : !orders || orders.length === 0 ? (
-            <div className="py-12 text-center">
-              <div className="flex flex-col items-center">
-                <ShoppingBag className="h-12 w-12 text-gray-400 mb-4" />
-                <h3 className="text-lg font-medium text-gray-900">No orders found</h3>
-                <p className="mt-1 text-sm text-gray-500">
-                  {statusFilter === "all"
-                    ? "There are no orders in the system yet."
-                    : `There are no orders with the status "${statusFilter}".`}
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Seller</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {orders.map((order: any) => (
-                    <tr key={order.id}>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">#{order.id}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <User className="h-4 w-4 text-gray-400 mr-2" />
-                          <div className="text-sm text-gray-900">{order.customerName}</div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center">
-                          <Package className="h-4 w-4 text-gray-400 mr-2" />
-                          <div className="text-sm text-gray-900">{order.productName || "Unknown Product"}</div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{order.sellerBusinessName || "Unknown Seller"}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{formatCurrency(order.totalPrice)}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 py-1 text-xs rounded-full ${getOrderStatusBadgeColor(order.status)}`}>
-                          {order.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <Calendar className="h-4 w-4 text-gray-400 mr-2" />
-                          <div className="text-sm text-gray-500">{formatDate(order.createdAt)}</div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        {order.status === "ready" ? (
-                          <Button
-                            variant="default"
-                            size="sm"
-                            onClick={() => openTrackingDialog(order)}
-                          >
-                            <Truck className="h-4 w-4 mr-1" />
-                            Add Tracking
-                          </Button>
-                        ) : order.status === "fulfilled" ? (
-                          <div className="text-sm text-gray-500">
-                            <span className="font-medium">Tracking:</span> {order.trackingNumber}
-                          </div>
-                        ) : (
-                          <span className="text-sm text-gray-500">Awaiting seller</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+  const onAddTrackingSubmit = (data: TrackingForm) => {
+    if (selectedOrder) {
+      addTrackingMutation.mutate({ orderId: selectedOrder.id, data });
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "placed":
+        return <Badge variant="outline" className="bg-yellow-100 text-yellow-800">Processing</Badge>;
+      case "ready":
+        return <Badge variant="outline" className="bg-blue-100 text-blue-800">Ready to Ship</Badge>;
+      case "fulfilled":
+        return <Badge variant="outline" className="bg-green-100 text-green-800">Fulfilled</Badge>;
+      default:
+        return <Badge variant="outline">{status}</Badge>;
+    }
+  };
+
+  const isLoading = isAllOrdersLoading && isPendingOrdersLoading && isReadyOrdersLoading;
+
+  if (isLoading) {
+    return (
+      <div className="p-8">
+        <div className="flex items-center justify-center">
+          <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
         </div>
       </div>
+    );
+  }
 
-      {/* Tracking Number Dialog */}
-      <Dialog open={trackingDialog} onOpenChange={setTrackingDialog}>
+  return (
+    <div className="p-8">
+      <div className="flex flex-col space-y-4">
+        <h1 className="text-3xl font-bold tracking-tight">Orders Management</h1>
+        <p className="text-muted-foreground">
+          Track and manage customer orders across the platform
+        </p>
+      </div>
+
+      <Tabs defaultValue="all" className="mt-6">
+        <TabsList className="grid w-full grid-cols-3 mb-4">
+          <TabsTrigger value="all">All Orders ({Array.isArray(allOrders) ? allOrders.length : 0})</TabsTrigger>
+          <TabsTrigger value="pending">Processing ({Array.isArray(pendingOrders) ? pendingOrders.length : 0})</TabsTrigger>
+          <TabsTrigger value="ready">Ready to Ship ({Array.isArray(readyOrders) ? readyOrders.length : 0})</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="all">
+          <Card>
+            <CardHeader>
+              <CardTitle>All Orders</CardTitle>
+              <CardDescription>
+                View and manage all orders on the platform
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {Array.isArray(allOrders) && allOrders.length > 0 ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Order ID</TableHead>
+                      <TableHead>Customer</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Total</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {allOrders.map((order: any) => (
+                      <TableRow key={order.id}>
+                        <TableCell className="font-medium">#{order.id}</TableCell>
+                        <TableCell>{order.user?.name || "Unknown"}</TableCell>
+                        <TableCell>
+                          {order.createdAt 
+                            ? format(new Date(order.createdAt), 'MMM dd, yyyy') 
+                            : 'N/A'}
+                        </TableCell>
+                        <TableCell>₹{order.totalAmount?.toFixed(2) || '0.00'}</TableCell>
+                        <TableCell>{getStatusBadge(order.status)}</TableCell>
+                        <TableCell>
+                          <div className="flex space-x-2">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => handleViewOrder(order)}
+                            >
+                              <Eye className="h-4 w-4 mr-1" />
+                              View
+                            </Button>
+                            {order.status === "ready" && (
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                className="text-blue-600"
+                                onClick={() => handleAddTracking(order)}
+                              >
+                                <Truck className="h-4 w-4 mr-1" />
+                                Add Tracking
+                              </Button>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <div className="py-24 flex flex-col items-center justify-center text-center">
+                  <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-medium">No orders found</h3>
+                  <p className="text-muted-foreground">
+                    There are no orders on the platform yet.
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="pending">
+          <Card>
+            <CardHeader>
+              <CardTitle>Processing Orders</CardTitle>
+              <CardDescription>
+                Orders that are currently being processed by sellers
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {Array.isArray(pendingOrders) && pendingOrders.length > 0 ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Order ID</TableHead>
+                      <TableHead>Customer</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Total</TableHead>
+                      <TableHead>Seller</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {pendingOrders.map((order: any) => (
+                      <TableRow key={order.id}>
+                        <TableCell className="font-medium">#{order.id}</TableCell>
+                        <TableCell>{order.user?.name || "Unknown"}</TableCell>
+                        <TableCell>
+                          {order.createdAt 
+                            ? format(new Date(order.createdAt), 'MMM dd, yyyy') 
+                            : 'N/A'}
+                        </TableCell>
+                        <TableCell>₹{order.totalAmount?.toFixed(2) || '0.00'}</TableCell>
+                        <TableCell>{order.seller?.businessName || "Unknown"}</TableCell>
+                        <TableCell>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => handleViewOrder(order)}
+                          >
+                            <Eye className="h-4 w-4 mr-1" />
+                            View
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <div className="py-24 flex flex-col items-center justify-center text-center">
+                  <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-medium">No processing orders</h3>
+                  <p className="text-muted-foreground">
+                    There are no orders currently being processed.
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="ready">
+          <Card>
+            <CardHeader>
+              <CardTitle>Ready to Ship Orders</CardTitle>
+              <CardDescription>
+                Orders that are ready for shipping
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {Array.isArray(readyOrders) && readyOrders.length > 0 ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Order ID</TableHead>
+                      <TableHead>Customer</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Total</TableHead>
+                      <TableHead>Seller</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {readyOrders.map((order: any) => (
+                      <TableRow key={order.id}>
+                        <TableCell className="font-medium">#{order.id}</TableCell>
+                        <TableCell>{order.user?.name || "Unknown"}</TableCell>
+                        <TableCell>
+                          {order.createdAt 
+                            ? format(new Date(order.createdAt), 'MMM dd, yyyy') 
+                            : 'N/A'}
+                        </TableCell>
+                        <TableCell>₹{order.totalAmount?.toFixed(2) || '0.00'}</TableCell>
+                        <TableCell>{order.seller?.businessName || "Unknown"}</TableCell>
+                        <TableCell>
+                          <div className="flex space-x-2">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => handleViewOrder(order)}
+                            >
+                              <Eye className="h-4 w-4 mr-1" />
+                              View
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              className="text-blue-600"
+                              onClick={() => handleAddTracking(order)}
+                            >
+                              <Truck className="h-4 w-4 mr-1" />
+                              Add Tracking
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <div className="py-24 flex flex-col items-center justify-center text-center">
+                  <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-medium">No ready orders</h3>
+                  <p className="text-muted-foreground">
+                    There are no orders ready for shipping.
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+
+      {/* Order Detail Dialog */}
+      <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Order Details</DialogTitle>
+            <DialogDescription>
+              Order #{selectedOrder?.id || ""}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedOrder && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-2">Customer Information</h3>
+                  <div className="border rounded-md p-4">
+                    <p className="font-medium">{selectedOrder.user?.name || "Unknown"}</p>
+                    <p>{selectedOrder.user?.email || "No email provided"}</p>
+                    <p className="mt-2 text-sm">{selectedOrder.shippingAddress || "No shipping address"}</p>
+                    <p className="text-sm">{selectedOrder.city}, {selectedOrder.state} {selectedOrder.zipCode}</p>
+                  </div>
+                </div>
+                
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-2">Order Information</h3>
+                  <div className="border rounded-md p-4">
+                    <div className="flex justify-between mb-2">
+                      <p className="text-sm text-muted-foreground">Status:</p>
+                      <p>{getStatusBadge(selectedOrder.status)}</p>
+                    </div>
+                    <div className="flex justify-between mb-2">
+                      <p className="text-sm text-muted-foreground">Date:</p>
+                      <p>{selectedOrder.createdAt 
+                        ? format(new Date(selectedOrder.createdAt), 'MMM dd, yyyy') 
+                        : 'N/A'}</p>
+                    </div>
+                    <div className="flex justify-between mb-2">
+                      <p className="text-sm text-muted-foreground">Payment Method:</p>
+                      <p className="capitalize">{selectedOrder.paymentMethod?.replace('_', ' ') || "N/A"}</p>
+                    </div>
+                    {selectedOrder.trackingNumber && (
+                      <div className="flex justify-between mb-2">
+                        <p className="text-sm text-muted-foreground">Tracking:</p>
+                        <p>{selectedOrder.trackingNumber}</p>
+                      </div>
+                    )}
+                    {selectedOrder.carrier && (
+                      <div className="flex justify-between">
+                        <p className="text-sm text-muted-foreground">Carrier:</p>
+                        <p>{selectedOrder.carrier}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+              
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground mb-2">Order Items</h3>
+                <div className="border rounded-md overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Product</TableHead>
+                        <TableHead>Price</TableHead>
+                        <TableHead>Quantity</TableHead>
+                        <TableHead className="text-right">Total</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {Array.isArray(selectedOrder.items) && selectedOrder.items.map((item: any, index: number) => (
+                        <TableRow key={index}>
+                          <TableCell className="font-medium">{item.product?.name || "Unknown Product"}</TableCell>
+                          <TableCell>₹{item.price?.toFixed(2) || "0.00"}</TableCell>
+                          <TableCell>{item.quantity}</TableCell>
+                          <TableCell className="text-right">₹{(item.price * item.quantity).toFixed(2)}</TableCell>
+                        </TableRow>
+                      ))}
+                      <TableRow>
+                        <TableCell colSpan={3} className="text-right font-medium">Total</TableCell>
+                        <TableCell className="text-right font-bold">₹{selectedOrder.totalAmount?.toFixed(2) || "0.00"}</TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          <DialogFooter>
+            {selectedOrder && selectedOrder.status === "ready" && (
+              <Button 
+                onClick={() => {
+                  setViewDialogOpen(false);
+                  setTrackingDialogOpen(true);
+                }}
+              >
+                Add Tracking Information
+              </Button>
+            )}
+            {(selectedOrder?.status !== "ready" || !selectedOrder) && (
+              <Button onClick={() => setViewDialogOpen(false)}>
+                Close
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Tracking Dialog */}
+      <Dialog open={trackingDialogOpen} onOpenChange={setTrackingDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Add Tracking Information</DialogTitle>
             <DialogDescription>
-              Enter tracking information for order #{selectedOrder?.id}.
+              Add tracking details for order #{selectedOrder?.id}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-3">
-            <div className="space-y-2">
-              <div className="text-sm text-gray-700">
-                <span className="font-medium">Customer:</span> {selectedOrder?.customerName}
-              </div>
-              <div className="text-sm text-gray-700">
-                <span className="font-medium">Product:</span> {selectedOrder?.productName}
-              </div>
-              <div className="text-sm text-gray-700">
-                <span className="font-medium">Seller:</span> {selectedOrder?.sellerBusinessName}
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="tracking-number">Tracking Number</Label>
-              <Input
-                id="tracking-number"
-                value={trackingNumber}
-                onChange={(e) => setTrackingNumber(e.target.value)}
-                placeholder="Enter tracking number"
+          
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onAddTrackingSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="trackingNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Tracking Number</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="Enter tracking number" 
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setTrackingDialog(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleAddTracking}>
-              Confirm & Fulfill Order
-            </Button>
-          </DialogFooter>
+              
+              <FormField
+                control={form.control}
+                name="carrier"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Carrier/Shipping Company</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="Enter carrier name" 
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <DialogFooter>
+                <Button 
+                  type="submit" 
+                  disabled={addTrackingMutation.isPending}
+                >
+                  {addTrackingMutation.isPending ? "Adding..." : "Add Tracking"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
         </DialogContent>
       </Dialog>
-    </AdminLayout>
+    </div>
   );
 }
