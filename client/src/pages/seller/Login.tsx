@@ -134,9 +134,8 @@ export default function SellerLogin() {
           </div>
           <div className="flex justify-center">
             <Button 
-              variant="outline" 
               onClick={() => navigate("/seller/register")}
-              className="w-full"
+              className="w-full bg-orange-500 hover:bg-orange-600 text-white"
             >
               Register as Seller
             </Button>
