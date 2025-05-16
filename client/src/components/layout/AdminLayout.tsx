@@ -239,18 +239,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               </div>
 
               <div className="ml-4 flex items-center md:ml-6 space-x-4">
-                <button
-                  type="button"
-                  className="rounded-full bg-white p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-                >
-                  <span className="sr-only">View notifications</span>
-                  <Bell className="h-6 w-6" aria-hidden="true" />
-                </button>
-                
                 <Button 
                   onClick={handleLogout}
-                  variant="outline" 
+                  variant="destructive" 
                   className="flex items-center gap-2"
+                  size="sm"
                 >
                   <LogOut className="h-4 w-4" />
                   Logout
