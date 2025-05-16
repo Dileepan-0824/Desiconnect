@@ -250,25 +250,6 @@ export default function CustomerOrders() {
                         >
                           Reorder
                         </Button>
-                        {order.trackingNumber ? (
-                          <Button 
-                            variant="default"
-                            size="sm"
-                            className="bg-primary hover:bg-primary-dark"
-                            onClick={() => window.open("https://www.indiapost.gov.in/_layouts/15/dop.portal.tracking/trackconsignment.aspx", "_blank")}
-                          >
-                            <ExternalLink className="h-4 w-4 mr-1" /> Track Order
-                          </Button>
-                        ) : order.status === "fulfilled" && (
-                          <Button 
-                            variant="default"
-                            size="sm"
-                            className="bg-primary hover:bg-primary-dark"
-                            onClick={() => window.open("https://www.indiapost.gov.in/_layouts/15/dop.portal.tracking/trackconsignment.aspx", "_blank")}
-                          >
-                            <ExternalLink className="h-4 w-4 mr-1" /> Track Order
-                          </Button>
-                        )}
                       </div>
                     </TableCell>
                   </TableRow>
@@ -277,7 +258,7 @@ export default function CustomerOrders() {
             </Table>
             
             <div className="mt-6 flex flex-col md:flex-row justify-between items-center gap-4">
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <Button variant="outline" onClick={() => navigate("/products")}>
                   Continue Shopping
                 </Button>
@@ -297,6 +278,13 @@ export default function CustomerOrders() {
                       Add Test Orders
                     </>
                   )}
+                </Button>
+                <Button 
+                  variant="default"
+                  className="bg-primary hover:bg-primary-dark"
+                  onClick={() => window.open("https://www.indiapost.gov.in/_layouts/15/dop.portal.tracking/trackconsignment.aspx", "_blank")}
+                >
+                  <ExternalLink className="h-4 w-4 mr-2" /> Track Order
                 </Button>
               </div>
               <Button variant="ghost" size="sm" onClick={() => refetch()}>
