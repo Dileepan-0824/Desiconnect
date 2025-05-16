@@ -3,6 +3,7 @@ import { useLocation, Link } from "wouter";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { z } from "zod";
@@ -17,7 +18,7 @@ const loginSchema = z.object({
 
 type LoginForm = z.infer<typeof loginSchema>;
 
-export default function AdminLogin() {
+export default function CustomerLogin() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const { login } = useAuth();
@@ -34,7 +35,7 @@ export default function AdminLogin() {
   const onSubmit = async (data: LoginForm) => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/auth/admin/login", {
+      const response = await fetch("/api/auth/customer/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -53,10 +54,10 @@ export default function AdminLogin() {
       
       toast({
         title: "Login Successful",
-        description: "Welcome to the admin dashboard!",
+        description: "Welcome back to DesiConnect!",
       });
       
-      navigate("/admin");
+      navigate("/");
     } catch (error) {
       toast({
         title: "Login Failed",
@@ -69,12 +70,12 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="container flex items-center justify-center min-h-screen">
+    <div className="container flex items-center justify-center min-h-[80vh] py-8">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">Admin Login</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center">Customer Login</CardTitle>
           <CardDescription className="text-center">
-            Enter your credentials to access the admin dashboard
+            Enter your credentials to access your account
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -126,9 +127,17 @@ export default function AdminLogin() {
             </form>
           </Form>
         </CardContent>
-        <CardFooter className="flex justify-center">
+        <CardFooter className="flex flex-col space-y-2">
           <div className="text-sm text-center">
-            Access restricted to administrators only
+            <Link href="/forgot-password" className="text-primary hover:underline">
+              Forgot password?
+            </Link>
+          </div>
+          <div className="text-sm text-center">
+            Don't have an account?{" "}
+            <Link href="/register" className="text-primary hover:underline">
+              Register
+            </Link>
           </div>
         </CardFooter>
       </Card>

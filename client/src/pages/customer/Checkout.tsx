@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "wouter";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -25,7 +25,7 @@ type CheckoutForm = z.infer<typeof checkoutSchema>;
 
 export default function CustomerCheckout() {
   const { user, token } = useAuth();
-  const [navigate] = useNavigate();
+  const [, navigate] = useLocation();
   const { toast } = useToast();
   const [cartItems, setCartItems] = useState<any[]>([]);
   const [cartTotal, setCartTotal] = useState(0);
@@ -49,10 +49,11 @@ export default function CustomerCheckout() {
 
   useEffect(() => {
     if (cartData) {
-      setCartItems(cartData.items || []);
+      const items = Array.isArray(cartData.items) ? cartData.items : [];
+      setCartItems(items);
       
       // Calculate total
-      const total = (cartData.items || []).reduce(
+      const total = items.reduce(
         (sum: number, item: any) => sum + (item.price * item.quantity),
         0
       );
@@ -61,14 +62,16 @@ export default function CustomerCheckout() {
   }, [cartData]);
 
   const createOrderMutation = useMutation({
-    mutationFn: (data: any) =>
-      apiRequest("/api/customer/orders", {
+    mutationFn: async (data: any) => {
+      return fetch("/api/customer/orders", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
         },
-        body: JSON.stringify(data),
-      }),
+        body: JSON.stringify(data)
+      }).then(res => res.json());
+    },
     onSuccess: () => {
       toast({
         title: "Order Placed Successfully",
