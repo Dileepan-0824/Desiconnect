@@ -47,7 +47,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Fetch cart data on initial load and when authentication state changes
   useEffect(() => {
-    fetchCartData();
+    if (isAuthenticated) {
+      fetchCartData();
+    }
   }, [isAuthenticated]);
 
   // Calculate the total number of items in the cart

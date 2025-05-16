@@ -12,6 +12,7 @@ import * as sellerController from "./controllers/seller";
 import * as customerController from "./controllers/customer";
 import * as productController from "./controllers/product";
 import * as orderController from "./controllers/order";
+import * as testDataController from "./controllers/testData";
 
 // Import middleware
 import { authenticate, authorizeAdmin, authorizeSeller, authorizeCustomer } from "./middleware/auth";
@@ -60,8 +61,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/admin/products/:id/reject", authenticate, authorizeAdmin, adminController.rejectProduct);
   app.delete("/api/admin/products/:id", authenticate, authorizeAdmin, adminController.deleteProduct);
   
-  // Test route for seller approval (DEVELOPMENT ONLY)
+  // Test routes (DEVELOPMENT ONLY)
   if (process.env.NODE_ENV === 'development') {
+    // Test route for seller approval
     app.get("/api/test/approve-seller/:id", async (req, res) => {
       try {
         const sellerId = parseInt(req.params.id);
@@ -89,6 +91,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(500).json({ message: 'Server error' });
       }
     });
+    
+    // Test route to create sample orders
+    app.post("/api/test/create-orders", authenticate, authorizeCustomer, testDataController.createTestOrders);
   }
   
   // Admin Order Management
