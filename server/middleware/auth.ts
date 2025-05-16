@@ -28,17 +28,34 @@ export const generateToken = (payload: JwtPayload): string => {
 
 // Authentication middleware to verify JWT token
 export const authenticate = (req: Request, res: Response, next: NextFunction) => {
-  const token = req.headers.authorization?.split(' ')[1] || '';
-
-  if (!token) {
-    return res.status(401).json({ message: 'Authentication required' });
-  }
-
   try {
+    // Check for authorization header
+    const authHeader = req.headers.authorization;
+    
+    if (!authHeader) {
+      return res.status(401).json({ message: 'Authentication required' });
+    }
+    
+    // Format should be 'Bearer [token]'
+    const parts = authHeader.split(' ');
+    if (parts.length !== 2 || parts[0] !== 'Bearer') {
+      return res.status(401).json({ message: 'Authentication format invalid' });
+    }
+    
+    const token = parts[1];
+    
+    // Verify the token
     const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
+    
+    // Attach user payload to request object
     req.user = decoded;
+    
+    // Log successful authentication for debugging
+    console.log(`Authenticated user: ${decoded.email} (${decoded.role})`);
+    
     next();
   } catch (error) {
+    console.error('Authentication error:', error);
     return res.status(401).json({ message: 'Invalid or expired token' });
   }
 };
