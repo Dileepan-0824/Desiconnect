@@ -166,11 +166,19 @@ export default function AdminSellers() {
       
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (_, rejectedSellerId) => {
       toast({
         title: "Seller Rejected",
         description: "The seller has been rejected successfully.",
       });
+      
+      // Immediately remove the rejected seller from the UI
+      if (Array.isArray(sellers)) {
+        const updatedSeller = sellers.find(s => s.id === rejectedSellerId);
+        if (updatedSeller) {
+          updatedSeller.rejected = true;
+        }
+      }
       
       setRejectDialogOpen(false);
       setProcessingId(null);
@@ -193,6 +201,16 @@ export default function AdminSellers() {
 
   const handleRejectSeller = (sellerId: number) => {
     setProcessingId(sellerId);
+    
+    // Close dialog immediately to show the user something happened
+    setRejectDialogOpen(false);
+    
+    // Show immediate visual feedback
+    toast({
+      title: "Processing",
+      description: "Rejecting seller...",
+    });
+    
     rejectSellerMutation.mutate(sellerId);
   };
 
