@@ -97,8 +97,7 @@ export default function SellerRegister() {
           </CardHeader>
           <CardContent className="text-center">
             <p className="mb-4">
-              Your application has been received and is pending review by our admin team. 
-              We'll notify you via email once your account has been approved.
+              Your application has been received and is pending review by our admin team.
             </p>
             <Button onClick={() => navigate("/seller/login")} className="mt-4">
               Return to Login
@@ -119,18 +118,7 @@ export default function SellerRegister() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="mb-4 p-4 border rounded-md bg-blue-50">
-            <div className="flex items-start">
-              <AlertCircle className="h-5 w-5 text-blue-500 mr-2 mt-0.5" />
-              <div>
-                <p className="text-sm font-medium text-blue-800">Application Process</p>
-                <p className="text-sm text-blue-600">
-                  After submitting this form, your application will be reviewed by our team. 
-                  You'll receive an email notification once your account is approved.
-                </p>
-              </div>
-            </div>
-          </div>
+
           
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
