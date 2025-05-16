@@ -119,6 +119,44 @@ export const resetAdminPassword = async (req: Request, res: Response) => {
 };
 
 // Seller auth controllers
+export const registerSeller = async (req: Request, res: Response) => {
+  try {
+    const validatedData = insertSellerSchema.parse(req.body);
+    
+    const existingUser = await storage.getSellerByEmail(validatedData.email);
+    if (existingUser) {
+      return res.status(409).json({ message: 'Email already in use' });
+    }
+
+    const hashedPassword = await hashPassword(validatedData.password);
+    
+    // Set status for seller accounts that need approval
+    const seller = await storage.createSeller({
+      ...validatedData,
+      password: hashedPassword,
+    });
+
+    // Send welcome email to the seller
+    await sendWelcomeEmail(seller.email, seller.businessName, 'seller');
+
+    return res.status(201).json({
+      message: 'Your seller application has been submitted for review',
+      user: {
+        id: seller.id,
+        email: seller.email,
+        businessName: seller.businessName,
+      },
+    });
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const validationError = fromZodError(error);
+      return res.status(400).json({ message: validationError.message });
+    }
+    console.error('Seller registration error:', error);
+    return res.status(500).json({ message: 'Server error' });
+  }
+};
+
 export const loginSeller = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;

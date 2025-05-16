@@ -35,6 +35,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Seller Auth
   app.post("/api/auth/seller/login", authController.loginSeller);
+  app.post("/api/auth/seller/register", authController.registerSeller);
   app.post("/api/auth/seller/reset-password", authController.resetSellerPassword);
 
   // Customer Auth
