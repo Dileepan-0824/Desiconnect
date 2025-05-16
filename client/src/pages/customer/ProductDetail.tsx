@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { getProductDetails, updateCart, getApprovedProducts, getCart } from "@/lib/api";
 import { useAuth } from "@/hooks/use-auth";
+import { useCart } from "@/hooks/use-cart";
 import { useToast } from "@/hooks/use-toast";
 import { formatCurrency } from "@/lib/utils";
 import {
@@ -30,6 +31,7 @@ import {
 export default function ProductDetail() {
   const [location, navigate] = useLocation();
   const { isAuthenticated } = useAuth();
+  const { refetchCart } = useCart();
   const { toast } = useToast();
   const productId = parseInt(location.split('/').pop() || '0');
   
@@ -125,6 +127,9 @@ export default function ProductDetail() {
       
       // Update cart
       await updateCart({ items: newItems });
+      
+      // Refresh cart count in the header
+      await refetchCart();
       
       toast({
         title: "Added to cart",
