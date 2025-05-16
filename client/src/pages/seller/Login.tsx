@@ -126,14 +126,20 @@ export default function SellerLogin() {
             </form>
           </Form>
         </CardContent>
-        <CardFooter className="flex flex-col space-y-2">
+        <CardFooter className="flex flex-col space-y-4">
           <div className="text-sm text-center">
             <Link href="/seller/forgot-password" className="text-primary hover:underline">
               Forgot password?
             </Link>
           </div>
-          <div className="text-sm text-center">
-            Not registered yet? Please contact admin to create a seller account.
+          <div className="flex justify-center">
+            <Button 
+              variant="outline" 
+              onClick={() => navigate("/seller/register")}
+              className="w-full"
+            >
+              Register as Seller
+            </Button>
           </div>
         </CardFooter>
       </Card>
