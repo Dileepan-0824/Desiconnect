@@ -24,6 +24,7 @@ import {
   Trash,
   Image,
   AlertCircle,
+  Boxes,
 } from "lucide-react";
 import {
   Dialog,
@@ -49,6 +50,7 @@ export default function SellerProducts() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [inventoryDialogOpen, setInventoryDialogOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
 
   // Form state
@@ -57,6 +59,7 @@ export default function SellerProducts() {
   const [category, setCategory] = useState("");
   const [price, setPrice] = useState("");
   const [quantity, setQuantity] = useState("");
+  const [inventoryQuantity, setInventoryQuantity] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
@@ -105,6 +108,12 @@ export default function SellerProducts() {
   const openDeleteDialog = (product: any) => {
     setSelectedProduct(product);
     setDeleteDialogOpen(true);
+  };
+  
+  const openInventoryDialog = (product: any) => {
+    setSelectedProduct(product);
+    setInventoryQuantity(String(product.quantity));
+    setInventoryDialogOpen(true);
   };
 
   const handleCreateProduct = async () => {
@@ -199,6 +208,44 @@ export default function SellerProducts() {
         variant: "destructive",
         title: "Error",
         description: error.message || "Failed to delete product",
+      });
+    }
+  };
+  
+  const handleUpdateInventory = async () => {
+    if (!inventoryQuantity || parseInt(inventoryQuantity) < 0) {
+      toast({
+        variant: "destructive",
+        title: "Validation error",
+        description: "Please enter a valid quantity (0 or higher)",
+      });
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append("quantity", inventoryQuantity);
+      
+      await updateProduct(selectedProduct.id, formData);
+      
+      toast({
+        title: "Success",
+        description: "Inventory updated successfully",
+      });
+      
+      setInventoryDialogOpen(false);
+      
+      // Refresh the product list and also invalidate the public products data
+      // so customer facing pages will show updated inventory
+      await refetch();
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      queryClient.invalidateQueries({ queryKey: [`/api/products/${selectedProduct.id}`] });
+      
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "Failed to update inventory",
       });
     }
   };
