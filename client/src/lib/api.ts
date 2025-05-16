@@ -201,24 +201,8 @@ export const getCart = async () => {
 };
 
 export const updateCart = async (cartData: any) => {
-  // Get the auth token from localStorage
-  const token = localStorage.getItem('desiconnect_token');
-  
-  const res = await fetch("/api/customer/cart", {
-    method: "POST",
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': token ? `Bearer ${token}` : '',
-    },
-    body: JSON.stringify(cartData),
-    credentials: "include",
-  });
-  
-  if (!res.ok) {
-    const errorText = await res.text();
-    throw new Error(errorText || res.statusText);
-  }
-  
+  // Use the apiRequest function which handles auth token consistently
+  const res = await apiRequest("POST", "/api/customer/cart", cartData);
   return res.json();
 };
 

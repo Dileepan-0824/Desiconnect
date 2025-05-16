@@ -125,11 +125,22 @@ export default function ProductDetail() {
         ];
       }
       
-      // Update cart
-      await updateCart({ items: newItems });
-      
-      // Refresh cart count in the header
-      await refetchCart();
+      // Update cart with better error handling
+      try {
+        await updateCart({ items: newItems });
+        console.log("Cart updated successfully");
+        
+        // Refresh cart count in the header
+        await refetchCart();
+      } catch (cartError) {
+        console.error("Error updating cart:", cartError);
+        toast({
+          variant: "destructive",
+          title: "Cart update failed",
+          description: "Please try logging in again or refresh the page",
+        });
+        throw cartError;
+      }
       
       toast({
         title: "Added to cart",
