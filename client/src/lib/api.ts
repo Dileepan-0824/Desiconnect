@@ -249,8 +249,19 @@ export const getProductDetails = async (id: number) => {
 };
 
 export const searchProducts = async (query: string) => {
-  const res = await apiRequest("GET", `/api/products/search?query=${encodeURIComponent(query)}`);
-  return res.json();
+  try {
+    const res = await apiRequest("GET", `/api/products/search?query=${encodeURIComponent(query)}`);
+    
+    if (!res.ok) {
+      console.error('Search request failed with status:', res.status);
+      throw new Error(`Search request failed: ${res.statusText}`);
+    }
+    
+    return res.json();
+  } catch (error) {
+    console.error('Error searching products:', error);
+    throw error;
+  }
 };
 
 // Order API

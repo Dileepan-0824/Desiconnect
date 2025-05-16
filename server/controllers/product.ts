@@ -61,7 +61,9 @@ export const searchProducts = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'Search query is required' });
     }
     
+    console.log('Searching products with query:', query);
     const products = await storage.searchProducts(query);
+    console.log('Found products:', products.length);
     return res.status(200).json(products);
   } catch (error) {
     console.error('Error searching products:', error);

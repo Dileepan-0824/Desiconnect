@@ -48,7 +48,7 @@ export default function CustomerProducts() {
   }, [categoryFromUrl, searchFromUrl]);
   
   // Determine which API to call based on filters
-  const { data: products, isLoading } = useQuery({
+  const { data: products, isLoading, error } = useQuery({
     queryKey: searchFromUrl 
       ? ['/api/products/search', searchFromUrl]
       : categoryFromUrl 
@@ -56,6 +56,7 @@ export default function CustomerProducts() {
         : ['/api/products'],
     queryFn: async () => {
       if (searchFromUrl) {
+        console.log("Searching for products with query:", searchFromUrl);
         return searchProducts(searchFromUrl);
       } else if (categoryFromUrl) {
         return getProductsByCategory(categoryFromUrl);
