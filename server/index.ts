@@ -39,11 +39,12 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Create a default admin account if none exists
+  // Create default accounts for testing
   try {
     await createDefaultAdmin();
+    await createDefaultCustomer();
   } catch (error) {
-    log(`Error creating default admin: ${error}`);
+    log(`Error creating default accounts: ${error}`);
   }
   
   const server = await registerRoutes(app);

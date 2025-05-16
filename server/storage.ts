@@ -64,6 +64,7 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, user: Partial<InsertUser>): Promise<User | undefined>;
   updateUserCart(id: number, cartData: any): Promise<User | undefined>;
+  getAllUsers(): Promise<User[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -267,6 +268,10 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, id))
       .returning();
     return updatedUser;
+  }
+  
+  async getAllUsers(): Promise<User[]> {
+    return db.select().from(users);
   }
 }
 
