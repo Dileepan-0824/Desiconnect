@@ -179,7 +179,7 @@ export default function CustomerHome() {
           <div className="relative rounded-lg overflow-hidden h-64 group">
             <div 
               className="absolute inset-0 bg-cover bg-center transition-transform group-hover:scale-105"
-              style={{ backgroundImage: "url('https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=500&q=80')" }}
+              style={{ backgroundImage: "url('https://images.unsplash.com/photo-1485125639709-a60c3a500bf1?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=500&q=80')" }}
             ></div>
             <div className="absolute bottom-0 left-0 p-6">
               <h3 className="text-black bg-white/70 px-3 py-1 rounded text-xl font-semibold mb-2">Apparel</h3>
@@ -217,7 +217,7 @@ export default function CustomerHome() {
           <div className="relative rounded-lg overflow-hidden h-64 group">
             <div 
               className="absolute inset-0 bg-cover bg-center transition-transform group-hover:scale-105"
-              style={{ backgroundImage: "url('https://images.unsplash.com/photo-1542262867-c4b517b92db8?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=500&q=80')" }}
+              style={{ backgroundImage: "url('https://images.unsplash.com/photo-1615044010131-ee9cf73e5c47?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=500&q=80')" }}
             ></div>
             <div className="absolute bottom-0 left-0 p-6">
               <h3 className="text-black bg-white/70 px-3 py-1 rounded text-xl font-semibold mb-2">Festivities</h3>
