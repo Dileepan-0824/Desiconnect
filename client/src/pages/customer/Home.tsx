@@ -181,9 +181,8 @@ export default function CustomerHome() {
               className="absolute inset-0 bg-cover bg-center transition-transform group-hover:scale-105"
               style={{ backgroundImage: "url('https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=500&q=80')" }}
             ></div>
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
             <div className="absolute bottom-0 left-0 p-6">
-              <h3 className="text-white text-xl font-semibold mb-2">Apparel</h3>
+              <h3 className="text-black bg-white/70 px-3 py-1 rounded text-xl font-semibold mb-2">Apparel</h3>
               <Button
                 variant="default" 
                 size="sm"
@@ -201,9 +200,8 @@ export default function CustomerHome() {
               className="absolute inset-0 bg-cover bg-center transition-transform group-hover:scale-105"
               style={{ backgroundImage: "url('https://images.unsplash.com/photo-1601821765780-754fa98637c1?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=500&q=80')" }}
             ></div>
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
             <div className="absolute bottom-0 left-0 p-6">
-              <h3 className="text-white text-xl font-semibold mb-2">Accessories</h3>
+              <h3 className="text-black bg-white/70 px-3 py-1 rounded text-xl font-semibold mb-2">Accessories</h3>
               <Button
                 variant="default" 
                 size="sm"
@@ -221,9 +219,8 @@ export default function CustomerHome() {
               className="absolute inset-0 bg-cover bg-center transition-transform group-hover:scale-105"
               style={{ backgroundImage: "url('https://images.unsplash.com/photo-1542262867-c4b517b92db8?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=500&q=80')" }}
             ></div>
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
             <div className="absolute bottom-0 left-0 p-6">
-              <h3 className="text-white text-xl font-semibold mb-2">Festivities</h3>
+              <h3 className="text-black bg-white/70 px-3 py-1 rounded text-xl font-semibold mb-2">Festivities</h3>
               <Button
                 variant="default" 
                 size="sm"
