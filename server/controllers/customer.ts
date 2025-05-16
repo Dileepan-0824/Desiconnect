@@ -193,14 +193,14 @@ export const createOrder = async (req: Request, res: Response) => {
       }
       
       // Calculate total price
-      const totalPrice = parseFloat(String(product.price)) * item.quantity;
+      const totalPrice = (parseFloat(String(product.price)) * item.quantity).toString();
       
       // Create order
       const orderData = {
         productId: product.id,
         sellerId: product.sellerId,
         userId,
-        customerName: user.name,
+        customerName: user.name || 'Customer',
         address,
         quantity: item.quantity,
         totalPrice,

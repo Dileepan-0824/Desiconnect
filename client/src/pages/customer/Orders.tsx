@@ -24,11 +24,36 @@ export default function CustomerOrders() {
   const { user, token } = useAuth();
   const [, navigate] = useLocation();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   // Fetch orders data
   const { data: orders, isLoading, error, refetch } = useQuery({
     queryKey: ["/api/customer/orders"],
     enabled: !!token && !!user,
+  });
+  
+  // Create test orders for demonstration
+  const createTestOrdersMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", "/api/test/create-orders");
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Test Orders Created",
+        description: "Sample orders have been created for demonstration purposes",
+        variant: "default",
+      });
+      // Refresh the orders list
+      queryClient.invalidateQueries({ queryKey: ["/api/customer/orders"] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: `Failed to create test orders: ${(error as Error).message}`,
+        variant: "destructive",
+      });
+    }
   });
 
   if (isLoading) {
@@ -94,9 +119,29 @@ export default function CustomerOrders() {
               <div className="py-8">
                 <Package className="h-20 w-20 mx-auto text-gray-300 mb-4" />
                 <p className="text-gray-600 mb-6">Browse our products and place your first order!</p>
-                <Button onClick={() => navigate("/products")} size="lg">
-                  Shop Now
-                </Button>
+                <div className="flex flex-col md:flex-row gap-4 justify-center">
+                  <Button onClick={() => navigate("/products")} size="lg">
+                    Shop Now
+                  </Button>
+                  <Button 
+                    variant="secondary" 
+                    size="lg"
+                    onClick={() => createTestOrdersMutation.mutate()}
+                    disabled={createTestOrdersMutation.isPending}
+                  >
+                    {createTestOrdersMutation.isPending ? (
+                      <>
+                        <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+                        Creating...
+                      </>
+                    ) : (
+                      <>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Create Test Orders
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -211,10 +256,29 @@ export default function CustomerOrders() {
               </TableBody>
             </Table>
             
-            <div className="mt-6 flex justify-between items-center">
-              <Button variant="outline" onClick={() => navigate("/products")}>
-                Continue Shopping
-              </Button>
+            <div className="mt-6 flex flex-col md:flex-row justify-between items-center gap-4">
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => navigate("/products")}>
+                  Continue Shopping
+                </Button>
+                <Button 
+                  variant="secondary" 
+                  onClick={() => createTestOrdersMutation.mutate()}
+                  disabled={createTestOrdersMutation.isPending}
+                >
+                  {createTestOrdersMutation.isPending ? (
+                    <>
+                      <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+                      Creating...
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Test Orders
+                    </>
+                  )}
+                </Button>
+              </div>
               <Button variant="ghost" size="sm" onClick={() => refetch()}>
                 Refresh
               </Button>
