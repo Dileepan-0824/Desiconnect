@@ -63,11 +63,6 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
                 <Link href="/cart">
                   <a className="text-gray-700 relative">
                     <ShoppingCart className="h-6 w-6" />
-                    {cartCount > 0 && (
-                      <Badge variant="destructive" className="absolute -top-2 -right-2 px-1.5 py-0.5 min-w-[20px] h-5 flex items-center justify-center text-xs">
-                        {cartCount}
-                      </Badge>
-                    )}
                   </a>
                 </Link>
                 <button
@@ -137,11 +132,6 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
                 <a className="text-gray-700 hover:text-primary relative">
                   <ShoppingCart className="h-5 w-5 mr-2 inline-block" />
                   <span>Cart</span>
-                  {cartCount > 0 && (
-                    <Badge variant="destructive" className="absolute -top-2 -right-2 px-1.5 py-0.5 min-w-[20px] h-5 flex items-center justify-center text-xs">
-                      {cartCount}
-                    </Badge>
-                  )}
                 </a>
               </Link>
             </div>
