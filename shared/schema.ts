@@ -44,6 +44,8 @@ export const sellers = pgTable("sellers", {
   phone: text("phone"),
   gst: text("gst"),
   adminId: integer("admin_id").references(() => admins.id),
+  approved: boolean("approved").default(false),
+  rejected: boolean("rejected").default(false),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -128,7 +130,7 @@ export const usersRelations = relations(users, ({ many }) => ({
 export const insertAdminSchema = createInsertSchema(admins).omit({ id: true, createdAt: true });
 export const selectAdminSchema = createSelectSchema(admins);
 
-export const insertSellerSchema = createInsertSchema(sellers).omit({ id: true, createdAt: true });
+export const insertSellerSchema = createInsertSchema(sellers).omit({ id: true, createdAt: true, approved: true, rejected: true });
 export const selectSellerSchema = createSelectSchema(sellers);
 
 export const insertProductSchema = createInsertSchema(products).omit({ id: true, createdAt: true });
