@@ -99,7 +99,7 @@ export default function CustomerHome() {
         <div className="absolute bottom-6 right-6 md:bottom-10 md:right-10">
           <Button
             onClick={() => navigate("/products")}
-            className="bg-white text-primary hover:bg-gray-100 font-medium py-2 px-6 rounded-lg transition"
+            className="bg-primary hover:bg-primary-dark text-white font-medium py-2 px-6 rounded-lg transition"
           >
             Shop Now
           </Button>
