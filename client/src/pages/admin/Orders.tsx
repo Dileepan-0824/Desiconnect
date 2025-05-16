@@ -453,17 +453,57 @@ export default function AdminOrders() {
                     <h3 className="text-sm font-medium text-muted-foreground mb-2">Process Order</h3>
                     <div className="border rounded-md p-3 bg-green-50 border-green-100">
                       <div className="flex flex-col space-y-2">
-                        <Button 
-                          size="sm"
-                          className="bg-green-600 hover:bg-green-700 text-white"
-                          onClick={() => {
-                            setViewDialogOpen(false);
-                            handleAddTracking(selectedOrder);
-                          }}
-                        >
-                          <Truck className="h-4 w-4 mr-2" />
-                          Add Carrier
-                        </Button>
+                        {selectedOrder.trackingNumber ? (
+                          <Button 
+                            size="sm"
+                            className="bg-green-600 hover:bg-green-700 text-white"
+                            onClick={() => {
+                              // Logic to approve and fulfill the order
+                              const updatedOrder = {...selectedOrder, status: 'fulfilled'};
+                              // Call API to update order status
+                              fetch(`/api/admin/orders/${selectedOrder.id}/status`, {
+                                method: 'PUT',
+                                headers: {
+                                  'Content-Type': 'application/json',
+                                  'Authorization': `Bearer ${token}`
+                                },
+                                body: JSON.stringify({ status: 'fulfilled' })
+                              })
+                              .then(() => {
+                                setViewDialogOpen(false);
+                                toast({
+                                  title: "Order Approved",
+                                  description: "The order has been approved and fulfilled successfully.",
+                                });
+                                // Invalidate queries to refresh data
+                                queryClient.invalidateQueries({ queryKey: ["/api/admin/orders/status/ready"] });
+                                queryClient.invalidateQueries({ queryKey: ["/api/admin/orders"] });
+                              })
+                              .catch(error => {
+                                toast({
+                                  title: "Error",
+                                  description: "Failed to approve order. Please try again.",
+                                  variant: "destructive"
+                                });
+                              });
+                            }}
+                          >
+                            <CheckCircle className="h-4 w-4 mr-2" />
+                            Approve Order
+                          </Button>
+                        ) : (
+                          <Button 
+                            size="sm"
+                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                            onClick={() => {
+                              setViewDialogOpen(false);
+                              handleAddTracking(selectedOrder);
+                            }}
+                          >
+                            <Truck className="h-4 w-4 mr-2" />
+                            Add Carrier
+                          </Button>
+                        )}
                       </div>
                     </div>
                   </div>
