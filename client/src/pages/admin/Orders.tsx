@@ -168,10 +168,9 @@ export default function AdminOrders() {
         </p>
       </div>
 
-      <Tabs defaultValue="all" className="mt-6">
-        <TabsList className="grid w-full grid-cols-2 mb-4">
+      <Tabs defaultValue="ready" className="mt-6">
+        <TabsList className="grid w-full grid-cols-1 mb-4">
           <TabsTrigger value="ready">Ready to Ship ({Array.isArray(readyOrders) ? readyOrders.length : 0})</TabsTrigger>
-          <TabsTrigger value="all">All Orders ({Array.isArray(allOrders) ? allOrders.length : 0})</TabsTrigger>
         </TabsList>
         
         <TabsContent value="all">
@@ -468,7 +467,7 @@ export default function AdminOrders() {
                           }}
                         >
                           <Truck className="h-4 w-4 mr-2" />
-                          Add Tracking & Complete Order
+                          Add Carrier
                         </Button>
                       </div>
                     </div>
