@@ -142,7 +142,7 @@ export const createProduct = async (req: Request, res: Response) => {
     // Validate product data
     const productData = {
       ...req.body,
-      price: parseFloat(req.body.price),
+      price: req.body.price, // Keep price as string
       quantity: parseInt(req.body.quantity),
       sellerId,
     };
@@ -200,7 +200,7 @@ export const updateProduct = async (req: Request, res: Response) => {
     if (req.body.name) updateData.name = req.body.name;
     if (req.body.description) updateData.description = req.body.description;
     if (req.body.category) updateData.category = req.body.category;
-    if (req.body.price) updateData.price = parseFloat(req.body.price);
+    if (req.body.price) updateData.price = req.body.price; // Keep price as string
     if (req.body.quantity) updateData.quantity = parseInt(req.body.quantity);
     
     // Add image path if file was uploaded
