@@ -359,25 +359,40 @@ export default function AdminSellers() {
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
-                        {!seller.approved && (
+                        {!seller.approved && !seller.rejected && (
                           <Button 
                             variant="default"
                             size="sm"
                             onClick={() => handleApproveSeller(seller.id)}
                             className="ml-2 bg-green-600 hover:bg-green-700"
+                            disabled={processingId === seller.id}
                           >
-                            Approve
+                            {processingId === seller.id ? "Processing..." : "Approve"}
                           </Button>
                         )}
-                        {!seller.rejected && !seller.approved && (
+                        {!seller.rejected && (
                           <Button 
                             variant="destructive"
                             size="sm"
-                            onClick={() => handleRejectSeller(seller.id)}
+                            onClick={() => {
+                              setSelectedSeller(seller);
+                              setRejectDialogOpen(true);
+                            }}
                             className="ml-2"
+                            disabled={processingId === seller.id || seller.approved}
                           >
                             Reject
                           </Button>
+                        )}
+                        {seller.rejected && (
+                          <span className="ml-2 px-2 py-1 text-xs bg-red-100 text-red-800 rounded-md">
+                            Rejected
+                          </span>
+                        )}
+                        {seller.approved && !seller.rejected && (
+                          <span className="ml-2 px-2 py-1 text-xs bg-green-100 text-green-800 rounded-md">
+                            Approved
+                          </span>
                         )}
                       </div>
                     </TableCell>
@@ -397,6 +412,49 @@ export default function AdminSellers() {
         </CardContent>
       </Card>
 
+      {/* Seller Rejection Confirmation Dialog */}
+      <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Seller Rejection</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to reject this seller? This action will prevent the seller from listing products on the platform.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedSeller && (
+            <div className="my-4 p-4 bg-red-50 rounded-md border border-red-200">
+              <h3 className="font-medium text-red-800">
+                {selectedSeller.businessName}
+              </h3>
+              <p className="text-sm text-red-700 mt-1">
+                {selectedSeller.email}
+              </p>
+            </div>
+          )}
+          
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setRejectDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button 
+              variant="destructive"
+              onClick={() => {
+                if (selectedSeller) {
+                  handleRejectSeller(selectedSeller.id);
+                }
+              }}
+              disabled={rejectSellerMutation.isPending}
+            >
+              {rejectSellerMutation.isPending ? "Rejecting..." : "Confirm Rejection"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
       {/* Seller Detail Dialog */}
       <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
         <DialogContent>
