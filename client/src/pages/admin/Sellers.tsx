@@ -424,8 +424,9 @@ export default function AdminSellers() {
                                 variant="destructive"
                                 size="sm"
                                 onClick={() => {
-                                  setSelectedSeller(seller);
-                                  setRejectDialogOpen(true);
+                                  if (confirm("Are you sure you want to reject this seller? They will be removed from the list.")) {
+                                    handleRejectSeller(seller.id);
+                                  }
                                 }}
                                 disabled={processingId === seller.id || seller.rejected}
                               >

@@ -11,7 +11,7 @@ import Landing from "@/pages/Landing";
 // Admin Pages
 import AdminLogin from "@/pages/admin/Login";
 import AdminDashboard from "@/pages/admin/Dashboard";
-import AdminSellers from "@/pages/admin/Sellers";
+import AdminSellers from "@/pages/admin/SimpleSellersList";
 import AdminProducts from "@/pages/admin/Products";
 import AdminOrders from "@/pages/admin/Orders";
 
