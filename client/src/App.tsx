@@ -30,6 +30,7 @@ import CustomerProductDetail from "@/pages/customer/ProductDetail";
 import CustomerCart from "@/pages/customer/Cart";
 import CustomerCheckout from "@/pages/customer/Checkout";
 import CustomerOrders from "@/pages/customer/Orders";
+import OrderDetails from "@/pages/customer/OrderDetails";
 import CustomerLogin from "@/pages/customer/Login";
 import CustomerRegister from "@/pages/customer/Register";
 import CustomerForgotPassword from "@/pages/customer/ForgotPassword";

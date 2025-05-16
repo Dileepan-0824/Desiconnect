@@ -283,14 +283,31 @@ export default function ProductDetail() {
               </div>
             </div>
             
-            <Button 
-              className="w-full md:w-auto mb-4 bg-primary hover:bg-primary-dark flex items-center justify-center"
-              onClick={addToCart}
-              disabled={!product.quantity}
-            >
-              <ShoppingCart className="h-5 w-5 mr-2" />
-              {product.quantity ? "Add to Cart" : "Out of Stock"}
-            </Button>
+            {product.quantity > 0 ? (
+              <Button 
+                className="w-full md:w-auto mb-4 bg-primary hover:bg-primary-dark flex items-center justify-center"
+                onClick={addToCart}
+              >
+                <ShoppingCart className="h-5 w-5 mr-2" />
+                Add to Cart
+              </Button>
+            ) : (
+              <Button 
+                className="w-full md:w-auto mb-4 flex items-center justify-center"
+                variant="outline"
+                disabled
+              >
+                <AlertCircle className="h-5 w-5 mr-2 text-red-500" />
+                Out of Stock
+              </Button>
+            )}
+            
+            {product.quantity > 0 && product.quantity <= 5 && (
+              <p className="text-sm text-amber-600 mt-2 flex items-center">
+                <AlertCircle className="h-4 w-4 mr-1" />
+                Only {product.quantity} item{product.quantity !== 1 ? 's' : ''} left
+              </p>
+            )}
             
             <div className="mt-8 space-y-4">
               <div className="flex items-start text-sm">
