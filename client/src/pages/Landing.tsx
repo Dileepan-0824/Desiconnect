@@ -1,12 +1,14 @@
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import desiConnectLogo from "@/assets/desi-connect-logo.png";
 
 export default function Landing() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <header className="bg-white shadow-sm py-4">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 flex items-center">
+          <img src={desiConnectLogo} alt="DesiConnect Logo" className="h-12 mr-4" />
           <h1 className="text-2xl font-bold text-gray-900">DesiConnect</h1>
         </div>
       </header>
@@ -37,7 +39,7 @@ export default function Landing() {
                 </svg>
               </div>
               <p className="text-gray-600">
-                Discover unique South Asian products and place orders easily.
+                Discover unique Indian products and place orders easily.
               </p>
             </CardContent>
             <CardFooter className="flex justify-center">
