@@ -131,9 +131,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Product Routes (Public)
   app.get("/api/products", productController.getApprovedProducts);
+  app.get("/api/products/search", productController.searchProducts);
   app.get("/api/products/category/:category", productController.getProductsByCategory);
   app.get("/api/products/:id", productController.getProductDetails);
-  app.get("/api/products/search", productController.searchProducts);
 
   // Order Routes
   app.get("/api/orders/:id", authenticate, orderController.getOrderDetails);
