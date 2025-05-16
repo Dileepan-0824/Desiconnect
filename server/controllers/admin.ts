@@ -333,9 +333,6 @@ export const approveSeller = async (req: Request, res: Response) => {
       rejected: false 
     });
     
-    // Send approval notification email
-    await sendSellerApprovalEmail(seller.email, seller.businessName);
-    
     return res.status(200).json({
       message: 'Seller approved successfully',
       seller: updatedSeller
@@ -359,9 +356,6 @@ export const rejectSeller = async (req: Request, res: Response) => {
       approved: false, 
       rejected: true 
     });
-    
-    // Send rejection notification email
-    await sendSellerRejectionEmail(seller.email, seller.businessName);
     
     return res.status(200).json({
       message: 'Seller rejected successfully',
