@@ -5,8 +5,16 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatCurrency(amount: number): string {
-  return `₹${amount.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,')}`;
+export function formatCurrency(amount: number | string): string {
+  // Convert to number if it's a string
+  const numericAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+  
+  // Handle potential NaN values
+  if (isNaN(numericAmount)) {
+    return '₹0.00';
+  }
+  
+  return `₹${numericAmount.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,')}`;
 }
 
 export function formatDate(dateString: string | Date): string {
