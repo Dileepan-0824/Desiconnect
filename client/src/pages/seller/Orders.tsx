@@ -33,14 +33,46 @@ import {
   AlertCircle,
 } from "lucide-react";
 
+interface OrderItem {
+  id: number;
+  name: string;
+  price: number | string;
+  quantity: number;
+  image?: string;
+  product?: {
+    id: number;
+    name: string;
+    image: string;
+  };
+}
+
+interface Order {
+  id: number;
+  status: string;
+  createdAt: string;
+  customerName: string;
+  customerMessage?: string;
+  address?: string;
+  total: number;
+  items: OrderItem[];
+  trackingNumber?: string;
+  totalPrice?: number;
+  quantity?: number;
+  product?: {
+    id: number;
+    name: string;
+    image: string;
+  };
+}
+
 export default function SellerOrders() {
   const { toast } = useToast();
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [messageDialogOpen, setMessageDialogOpen] = useState(false);
   const [confirmReadyDialogOpen, setConfirmReadyDialogOpen] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
-  const { data: orders, isLoading, refetch } = useQuery({
+  const { data: orders, isLoading, refetch } = useQuery<Order[]>({
     queryKey: ["/api/seller/orders"],
   });
 
@@ -79,10 +111,10 @@ export default function SellerOrders() {
   };
 
   // Filter orders based on status
-  const filteredOrders = orders
+  const filteredOrders = Array.isArray(orders)
     ? statusFilter === "all"
       ? orders
-      : orders.filter((order: any) => order.status === statusFilter)
+      : orders.filter((order) => order.status === statusFilter)
     : [];
 
   return (
