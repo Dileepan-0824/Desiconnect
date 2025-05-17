@@ -29,15 +29,24 @@ const checkoutSchema = z.object({
 
 type CheckoutForm = z.infer<typeof checkoutSchema>;
 
-interface CartData {
-  items: {
+interface CartItem {
+  id?: number;
+  productId?: number;
+  name?: string;
+  price?: number | string;
+  quantity: number;
+  image?: string;
+  sellerId?: number;
+  product?: {
     id: number;
     name: string;
     price: number | string;
-    quantity: number;
     image?: string;
-    sellerId?: number;
-  }[];
+  };
+}
+
+interface CartData {
+  items: CartItem[];
 }
 
 export default function CustomerCheckout() {
@@ -70,17 +79,44 @@ export default function CustomerCheckout() {
       const items = Array.isArray(cartData.items) ? cartData.items : [];
       setCartItems(items);
       
-      // Calculate total with better handling for price values
-      const total = items.reduce(
-        (sum: number, item: any) => {
-          const price = typeof item.price === 'string' ? parseFloat(item.price) : 
-                       typeof item.price === 'number' ? item.price : 0;
-          const qty = item.quantity || 0;
-          return sum + (price * qty);
-        },
-        0
-      );
-      setCartTotal(total || 0); // Ensure total is never NaN
+      console.log("Raw cart items:", items);
+      
+      // Calculate total with enhanced debugging and proper type handling
+      let total = 0;
+      
+      for (const item of items) {
+        // Log each item for debugging
+        console.log("Processing item:", item);
+        
+        // Extract price - could be stored in different properties depending on API
+        let itemPrice = 0;
+        if (typeof item.price === 'number') {
+          itemPrice = item.price;
+        } else if (typeof item.price === 'string') {
+          itemPrice = parseFloat(item.price);
+        } else if (item.product && typeof item.product.price === 'number') {
+          itemPrice = item.product.price;
+        } else if (item.product && typeof item.product.price === 'string') {
+          itemPrice = parseFloat(item.product.price);
+        }
+        
+        // Extract quantity with fallback
+        const quantity = typeof item.quantity === 'number' ? item.quantity : 1;
+        
+        // Calculate line total
+        const lineTotal = itemPrice * quantity;
+        console.log(`Item ${item.name || 'unnamed'}: price=${itemPrice}, qty=${quantity}, total=${lineTotal}`);
+        
+        if (!isNaN(lineTotal)) {
+          total += lineTotal;
+        }
+      }
+      
+      console.log("Final calculated total:", total);
+      setCartTotal(total);
+    } else {
+      console.log("Cart data invalid or empty:", cartData);
+      setCartTotal(0);
     }
   }, [cartData]);
 
@@ -315,15 +351,31 @@ export default function CustomerCheckout() {
                 {cartItems.length > 0 ? (
                   <>
                     {cartItems.map((item, index) => {
-                      const itemPrice = typeof item.price === 'string' ? parseFloat(item.price) : item.price;
-                      const quantity = item.quantity || 1;
+                      // Handle different product data structures
+                      const name = item.name || (item.product && item.product.name) || `Product #${index+1}`;
+                      
+                      // Extract price with fallbacks
+                      let itemPrice = 0;
+                      if (typeof item.price === 'number') {
+                        itemPrice = item.price;
+                      } else if (typeof item.price === 'string' && !isNaN(parseFloat(item.price))) {
+                        itemPrice = parseFloat(item.price);
+                      } else if (item.product && typeof item.product.price === 'number') {
+                        itemPrice = item.product.price;
+                      } else if (item.product && typeof item.product.price === 'string' && !isNaN(parseFloat(item.product.price))) {
+                        itemPrice = parseFloat(item.product.price);
+                      }
+                      
+                      const quantity = typeof item.quantity === 'number' ? item.quantity : 1;
+                      const lineTotal = itemPrice * quantity;
+                      
                       return (
                         <div key={index} className="flex justify-between items-start">
                           <div>
-                            <p className="font-medium">{item.name}</p>
+                            <p className="font-medium">{name}</p>
                             <p className="text-sm text-gray-500">Qty: {quantity}</p>
                           </div>
-                          <p className="font-medium">₹{(itemPrice * quantity).toFixed(2)}</p>
+                          <p className="font-medium">₹{lineTotal.toFixed(2)}</p>
                         </div>
                       );
                     })}
