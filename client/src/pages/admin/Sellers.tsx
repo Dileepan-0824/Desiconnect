@@ -355,7 +355,6 @@ export default function AdminSellers() {
                   <TableRow>
                     <TableHead>Business Name</TableHead>
                     <TableHead>Email</TableHead>
-                    <TableHead>Phone</TableHead>
                     <TableHead>Joined</TableHead>
                     <TableHead>Total Products</TableHead>
                     <TableHead>Actions</TableHead>
@@ -374,7 +373,6 @@ export default function AdminSellers() {
                         </div>
                       </TableCell>
                       <TableCell>{seller.email}</TableCell>
-                      <TableCell>{seller.phoneNumber || "No Phone"}</TableCell>
                       <TableCell>
                         {seller.createdAt 
                           ? new Date(seller.createdAt).toLocaleDateString() 
