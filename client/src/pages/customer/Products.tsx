@@ -347,7 +347,7 @@ export default function CustomerProducts() {
                   <div key={product.id} className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition">
                     <div 
                       className="h-48 bg-cover bg-center cursor-pointer"
-                      style={{ backgroundImage: `url(${product.image || 'https://via.placeholder.com/300x200?text=No+Image'})` }}
+                      style={{ backgroundImage: `url(${product.image ? getImageUrl(product.image) : 'https://via.placeholder.com/300x200?text=No+Image'})` }}
                       onClick={() => navigate(`/products/${product.id}`)}
                     ></div>
                     <div className="p-4">
