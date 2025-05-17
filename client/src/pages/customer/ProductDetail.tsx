@@ -230,7 +230,7 @@ export default function ProductDetail() {
           <div className="bg-white p-4 rounded-lg shadow-sm">
             {product.image ? (
               <img 
-                src={product.image} 
+                src={`http://localhost:5000${product.image}`} 
                 alt={product.name} 
                 className="w-full h-auto object-contain rounded-md max-h-96"
               />

@@ -82,3 +82,24 @@ export function debounce<T extends (...args: any[]) => any>(
     timeout = setTimeout(later, wait);
   };
 }
+
+/**
+ * Helper function to properly format image URLs from the server
+ * This handles both absolute and relative image paths
+ */
+export function getImageUrl(imagePath: string): string {
+  // If the path is already a full URL, return it as is
+  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+    return imagePath;
+  }
+  
+  // If it's a relative URL starting with /uploads, prepend the base URL
+  if (imagePath.startsWith('/uploads/')) {
+    // Get the base URL from window.location
+    const baseUrl = window.location.origin;
+    return `${baseUrl}${imagePath}`;
+  }
+  
+  // Return the original path if it doesn't match any pattern
+  return imagePath;
+}
