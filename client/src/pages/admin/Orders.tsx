@@ -430,20 +430,18 @@ export default function AdminOrders() {
                     {selectedOrder.seller?.email && (
                       <p className="text-sm">{selectedOrder.seller.email}</p>
                     )}
-                    {selectedOrder.seller?.phone && (
-                      <p className="text-sm">Phone: {selectedOrder.seller.phone}</p>
+                    {selectedOrder.seller?.phoneNumber && (
+                      <p className="text-sm">Phone: {selectedOrder.seller.phoneNumber}</p>
                     )}
-                    {selectedOrder.seller?.businessAddress && (
-                      <>
-                        <p className="mt-2 text-xs font-medium text-gray-500">Business Address:</p>
-                        <p className="text-sm">{selectedOrder.seller.businessAddress}</p>
-                      </>
-                    )}
-                    {selectedOrder.seller?.warehouseAddress && (
-                      <>
-                        <p className="mt-2 text-xs font-medium text-gray-500">Warehouse Address:</p>
-                        <p className="text-sm">{selectedOrder.seller.warehouseAddress}</p>
-                      </>
+                    <div className="mt-2">
+                      <p className="text-xs font-medium text-gray-500">Business Address:</p>
+                      <p className="text-sm">{selectedOrder.seller?.address || selectedOrder.seller?.businessAddress || "Address not available"}</p>
+                    </div>
+                    {selectedOrder.seller?.gstNumber && (
+                      <div className="mt-2">
+                        <p className="text-xs font-medium text-gray-500">GST Number:</p>
+                        <p className="text-sm">{selectedOrder.seller.gstNumber}</p>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -454,11 +452,19 @@ export default function AdminOrders() {
                   <h3 className="text-sm font-medium text-muted-foreground mb-2">Order Information</h3>
                   <div className="border rounded-md p-3">
                     <div className="flex justify-between mb-2">
+                      <p className="text-sm text-muted-foreground">Product:</p>
+                      <p className="font-medium">{selectedOrder.product?.name || 'Product Name Not Available'}</p>
+                    </div>
+                    <div className="flex justify-between mb-2">
+                      <p className="text-sm text-muted-foreground">Quantity:</p>
+                      <p className="font-medium">{selectedOrder.quantity || 1}</p>
+                    </div>
+                    <div className="flex justify-between mb-2">
                       <p className="text-sm text-muted-foreground">Status:</p>
                       <div>{getStatusBadge(selectedOrder.status)}</div>
                     </div>
                     <div className="flex justify-between mb-2">
-                      <p className="text-sm text-muted-foreground">Date:</p>
+                      <p className="text-sm text-muted-foreground">Order Date:</p>
                       <p>{selectedOrder.createdAt 
                         ? format(new Date(selectedOrder.createdAt), 'MMM dd, yyyy') 
                         : 'N/A'}</p>
@@ -484,21 +490,13 @@ export default function AdminOrders() {
                         <div className="space-y-3">
                           <div>
                             <label className="text-sm font-medium">Tracking Number*</label>
-                            <div className="flex space-x-2 mt-1">
+                            <div className="mt-1">
                               <Input 
-                                placeholder="Format: TR-XXXXXX-YYYYMMDD" 
+                                placeholder="Enter tracking number (Format: TR-XXXXXX-YYYYMMDD)" 
                                 value={form.watch("trackingNumber")} 
                                 onChange={(e) => form.setValue("trackingNumber", e.target.value)}
+                                className="w-full"
                               />
-                              <Button 
-                                type="button" 
-                                variant="outline" 
-                                onClick={() => {
-                                  form.setValue('trackingNumber', generateTrackingNumber());
-                                }}
-                              >
-                                Generate
-                              </Button>
                             </div>
                             {form.formState.errors.trackingNumber && (
                               <p className="text-sm font-medium text-red-500 mt-1">
