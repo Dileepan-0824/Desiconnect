@@ -228,17 +228,15 @@ export default function ProductDetail() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
           {/* Product Image */}
           <div className="bg-white p-4 rounded-lg shadow-sm">
-            {product.image ? (
-              <img 
-                src={getImageUrl(product.image)} 
-                alt={product.name} 
-                className="w-full h-auto object-contain rounded-md max-h-96"
-              />
-            ) : (
-              <div className="w-full h-96 flex items-center justify-center bg-gray-100 rounded-md">
-                <Package className="h-24 w-24 text-gray-300" />
-              </div>
-            )}
+            <img 
+              src={getImageUrl(product.image)} 
+              alt={product.name} 
+              className="w-full h-auto object-contain rounded-md max-h-96"
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = 'https://via.placeholder.com/500x400?text=Product+Image+Not+Available';
+              }}
+            />
           </div>
 
           {/* Product Info */}

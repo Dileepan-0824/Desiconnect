@@ -346,10 +346,19 @@ export default function CustomerProducts() {
                 {filteredProducts.map((product: any) => (
                   <div key={product.id} className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition">
                     <div 
-                      className="h-48 bg-cover bg-center cursor-pointer"
-                      style={{ backgroundImage: `url(${product.image ? getImageUrl(product.image) : 'https://via.placeholder.com/300x200?text=No+Image'})` }}
+                      className="h-48 bg-center cursor-pointer flex items-center justify-center overflow-hidden"
                       onClick={() => navigate(`/products/${product.id}`)}
-                    ></div>
+                    >
+                      <img 
+                        src={getImageUrl(product.image)} 
+                        alt={product.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.onerror = null;
+                          e.currentTarget.src = 'https://via.placeholder.com/300x200?text=Product+Image+Not+Available';
+                        }}
+                      />
+                    </div>
                     <div className="p-4">
                       <h3 
                         className="text-lg font-semibold mb-1 cursor-pointer hover:text-primary"

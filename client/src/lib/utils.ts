@@ -87,7 +87,12 @@ export function debounce<T extends (...args: any[]) => any>(
  * Helper function to properly format image URLs from the server
  * This handles both absolute and relative image paths
  */
-export function getImageUrl(imagePath: string): string {
+export function getImageUrl(imagePath: string | null | undefined): string {
+  // If no image path, return a placeholder
+  if (!imagePath) {
+    return 'https://via.placeholder.com/300x200?text=No+Image';
+  }
+  
   // If the path is already a full URL, return it as is
   if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
     return imagePath;
