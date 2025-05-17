@@ -630,7 +630,7 @@ export default function AdminOrders() {
                       ))}
                       <TableRow className="bg-gray-50">
                         <TableCell colSpan={3} className="text-right font-medium">Total Amount</TableCell>
-                        <TableCell className="text-right font-bold">₹{selectedOrder.totalAmount?.toFixed(2) || ((selectedOrder.product?.price || 0) * (selectedOrder.quantity || 1)).toFixed(2)}</TableCell>
+                        <TableCell className="text-right font-bold">₹{selectedOrder.totalPrice || selectedOrder.total_price || '0.00'}</TableCell>
                       </TableRow>
                     </TableBody>
                   </Table>
