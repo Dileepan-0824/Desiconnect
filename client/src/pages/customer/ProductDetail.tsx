@@ -324,13 +324,7 @@ export default function ProductDetail() {
             )}
             
             <div className="mt-8 space-y-4">
-              <div className="flex items-start text-sm">
-                <Truck className="h-5 w-5 text-gray-500 mr-3 flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-medium">Free Shipping</p>
-                  <p className="text-gray-500">On orders above ₹1000</p>
-                </div>
-              </div>
+
               <div className="flex items-start text-sm">
                 <ShieldCheck className="h-5 w-5 text-gray-500 mr-3 flex-shrink-0 mt-0.5" />
                 <div>
