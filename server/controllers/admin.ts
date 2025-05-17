@@ -252,12 +252,17 @@ export const getAllOrders = async (req: Request, res: Response) => {
       allOrders.map(async (order) => {
         const product = await storage.getProduct(order.productId);
         const seller = await storage.getSeller(order.sellerId);
+        
+        // Convert database field to a plain number to avoid serialization issues
+        const formattedPrice = Number(order.totalPrice);
+        
         return {
           ...order,
           productName: product?.name || 'Unknown Product',
           sellerBusinessName: seller?.businessName || 'Unknown Seller',
-          // Ensure price is consistent for the frontend
-          totalPrice: parseFloat(String(order.totalPrice))
+          // Ensure price data is consistent and accessible
+          totalPrice: formattedPrice,
+          formattedPrice: formattedPrice.toFixed(2)
         };
       })
     );
@@ -288,8 +293,9 @@ export const getOrdersByStatus = async (req: Request, res: Response) => {
           ...order,
           productName: product?.name || 'Unknown Product',
           sellerBusinessName: seller?.businessName || 'Unknown Seller',
-          // Map database field to totalPrice for consistent frontend access
-          totalPrice: order.totalPrice
+          // Convert database field to a plain number to avoid serialization issues
+          totalPrice: Number(order.totalPrice),
+          formattedPrice: Number(order.totalPrice).toFixed(2)
         };
       })
     );
