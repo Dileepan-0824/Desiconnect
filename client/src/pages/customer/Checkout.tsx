@@ -294,21 +294,31 @@ export default function CustomerCheckout() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {cartItems.map((item, index) => (
-                  <div key={index} className="flex justify-between">
-                    <div>
-                      <p className="font-medium">{item.name}</p>
-                      <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
-                    </div>
-                    <p>₹{(item.price * item.quantity).toFixed(2)}</p>
-                  </div>
-                ))}
+                {cartItems.length > 0 ? (
+                  <>
+                    {cartItems.map((item, index) => {
+                      const itemPrice = typeof item.price === 'string' ? parseFloat(item.price) : item.price;
+                      const quantity = item.quantity || 1;
+                      return (
+                        <div key={index} className="flex justify-between items-start">
+                          <div>
+                            <p className="font-medium">{item.name}</p>
+                            <p className="text-sm text-gray-500">Qty: {quantity}</p>
+                          </div>
+                          <p className="font-medium">₹{(itemPrice * quantity).toFixed(2)}</p>
+                        </div>
+                      );
+                    })}
+                  </>
+                ) : (
+                  <p className="text-center text-gray-500">No items in cart</p>
+                )}
                 
                 <Separator />
                 
                 <div className="flex justify-between font-medium">
                   <p>Subtotal</p>
-                  <p>₹{cartTotal.toFixed(2)}</p>
+                  <p>₹{cartTotal > 0 ? cartTotal.toFixed(2) : '0.00'}</p>
                 </div>
                 
                 <div className="flex justify-between text-sm">
@@ -320,7 +330,7 @@ export default function CustomerCheckout() {
                 
                 <div className="flex justify-between font-bold">
                   <p>Total</p>
-                  <p>₹{cartTotal.toFixed(2)}</p>
+                  <p>₹{cartTotal > 0 ? cartTotal.toFixed(2) : '0.00'}</p>
                 </div>
               </div>
             </CardContent>

@@ -352,7 +352,7 @@ export default function SellerOrders() {
                   <div className="text-gray-500">Quantity:</div>
                   <div className="font-medium">{selectedOrder.quantity} units</div>
                   <div className="text-gray-500">Amount:</div>
-                  <div className="font-medium">{formatCurrency(selectedOrder.totalPrice)}</div>
+                  <div className="font-medium">{formatCurrency(selectedOrder.totalPrice || 0)}</div>
                 </div>
               </div>
             )}
