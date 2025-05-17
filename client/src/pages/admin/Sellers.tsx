@@ -15,6 +15,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { SellerDetailsDialog } from "@/components/admin/SellerDetailsDialog";
 import { 
   Form, 
   FormControl, 
@@ -107,10 +108,8 @@ export default function AdminSellers() {
     }
   });
 
-  const handleViewSeller = (seller: any) => {
-    setSelectedSeller(seller);
-    setViewDialogOpen(true);
-  };
+  // Direct implementation without using the handleViewSeller function
+  // We'll use the direct approach in the button click event
 
   // Seller approval mutation
   const approveSellerMutation = useMutation({
@@ -384,7 +383,11 @@ export default function AdminSellers() {
                           <Button 
                             variant="outline" 
                             size="icon" 
-                            onClick={() => handleViewSeller(seller)}
+                            onClick={() => {
+                              console.log("View button clicked for seller:", seller);
+                              setSelectedSeller(seller);
+                              setViewDialogOpen(true);
+                            }}
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
@@ -502,161 +505,18 @@ export default function AdminSellers() {
         </DialogContent>
       </Dialog>
       
-      {/* Seller Detail Dialog */}
-      <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
-        <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle className="text-2xl">Seller Business Details</DialogTitle>
-            <DialogDescription>
-              Complete information about the seller and their business
-            </DialogDescription>
-          </DialogHeader>
-          
-          {selectedSeller && (
-            <div className="space-y-6">
-              <div className="bg-gray-50 border p-6 rounded-md">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="text-2xl font-bold">{selectedSeller.businessName}</h3>
-                    <div className="flex items-center mt-2">
-                      <div className={`h-3 w-3 rounded-full mr-2 ${
-                        selectedSeller.approved ? 'bg-green-500' : 
-                        selectedSeller.rejected ? 'bg-red-500' : 'bg-amber-500'
-                      }`}></div>
-                      <p className="text-sm font-bold">
-                        STATUS: {selectedSeller.approved ? 'APPROVED' : 
-                         selectedSeller.rejected ? 'REJECTED' : 'PENDING APPROVAL'}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="bg-white px-4 py-2 rounded border text-sm">
-                    <p>Member since:</p>
-                    <p className="font-bold">{selectedSeller.createdAt 
-                      ? new Date(selectedSeller.createdAt).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'long', 
-                          day: 'numeric'
-                        })
-                      : "N/A"}
-                    </p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-6 mt-6">
-                <div className="border rounded-md p-4">
-                  <h4 className="font-bold text-gray-700 border-b pb-2 mb-4">Contact Information</h4>
-                  <div className="space-y-4">
-                    <div>
-                      <p className="text-sm font-medium text-gray-500">Email Address</p>
-                      <p className="font-medium text-gray-900">{selectedSeller.email}</p>
-                    </div>
-                    
-                    <div>
-                      <p className="text-sm font-medium text-gray-500">Phone Number</p>
-                      <p className="font-medium text-gray-900">{selectedSeller.phoneNumber || "Not provided"}</p>
-                    </div>
-                    
-                    <div>
-                      <p className="text-sm font-medium text-gray-500">Business Address</p>
-                      <p className="font-medium text-gray-900">{selectedSeller.address || "Not provided"}</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="border rounded-md p-4">
-                  <h4 className="font-bold text-gray-700 border-b pb-2 mb-4">Business Information</h4>
-                  <div className="space-y-4">
-                    {selectedSeller.description && (
-                      <div>
-                        <p className="text-sm font-medium text-gray-500">Description</p>
-                        <p className="text-gray-900">{selectedSeller.description}</p>
-                      </div>
-                    )}
-                    
-                    <div>
-                      <p className="text-sm font-medium text-gray-500">GST Number</p>
-                      <p className="font-medium text-gray-900">{selectedSeller.gstNumber || "Not provided"}</p>
-                    </div>
-                    
-                    <div>
-                      <p className="text-sm font-medium text-gray-500">Registration Status</p>
-                      <p className="font-medium text-gray-900">{
-                        selectedSeller.approved 
-                          ? "Fully Registered" 
-                          : selectedSeller.rejected 
-                          ? "Registration Rejected" 
-                          : "Pending Registration"
-                      }</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="bg-blue-50 p-6 rounded-md border border-blue-100">
-                <h4 className="font-bold text-blue-800 border-b border-blue-200 pb-2 mb-4">Business Performance</h4>
-                <div className="grid grid-cols-3 gap-6">
-                  <div className="bg-white p-4 rounded-md border">
-                    <p className="text-sm text-gray-500">Total Products</p>
-                    <p className="text-2xl font-bold text-blue-600">{selectedSeller.totalProducts || 0}</p>
-                  </div>
-                  
-                  <div className="bg-white p-4 rounded-md border">
-                    <p className="text-sm text-gray-500">Total Orders</p>
-                    <p className="text-2xl font-bold text-blue-600">{selectedSeller.totalOrders || 0}</p>
-                  </div>
-                  
-                  <div className="bg-white p-4 rounded-md border">
-                    <p className="text-sm text-gray-500">Total Revenue</p>
-                    <p className="text-2xl font-bold text-blue-600">₹{selectedSeller.totalRevenue?.toLocaleString() || "0"}</p>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Action Buttons */}
-              <div className="border-t pt-4 flex justify-between">
-                <div>
-                  {!selectedSeller.approved && !selectedSeller.rejected && (
-                    <div className="flex space-x-3">
-                      <Button
-                        className="bg-green-600 hover:bg-green-700 text-white"
-                        onClick={() => {
-                          setViewDialogOpen(false);
-                          if (selectedSeller) {
-                            handleApproveSeller(selectedSeller.id);
-                          }
-                        }}
-                      >
-                        Approve Seller
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        onClick={() => {
-                          setViewDialogOpen(false);
-                          setSelectedSeller(selectedSeller);
-                          setRejectDialogOpen(true);
-                        }}
-                      >
-                        Reject Seller
-                      </Button>
-                    </div>
-                  )}
-                </div>
-                <Button 
-                  variant="outline" 
-                  onClick={() => setViewDialogOpen(false)}
-                >
-                  Close
-                </Button>
-              </div>
-            </div>
-          )}
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setViewDialogOpen(false)}>Close</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Replace with the new SellerDetailsDialog component */}
+      <SellerDetailsDialog
+        open={viewDialogOpen}
+        onOpenChange={setViewDialogOpen}
+        seller={selectedSeller}
+        onApproveSeller={(id) => handleApproveSeller(id)}
+        onRejectSeller={(id) => {
+          setViewDialogOpen(false);
+          setSelectedSeller({...selectedSeller, id});
+          setRejectDialogOpen(true);
+        }}
+      />
     </div>
   );
 }
