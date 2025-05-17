@@ -235,6 +235,9 @@ export default function CustomerOrders() {
                     </TableCell>
                     <TableCell>{formatCurrency(order.totalPrice)}</TableCell>
                     <TableCell>
+                      {getStatusBadge(order.status || 'placed')}
+                    </TableCell>
+                    <TableCell>
                       {order.trackingNumber ? (
                         <div className="flex items-center">
                           <Truck className="h-4 w-4 mr-1 text-blue-600" />

@@ -174,17 +174,13 @@ export default function SellerOrders() {
                           <div>
                             <div className="text-sm text-gray-900">{order.product?.name || "Unknown Product"}</div>
                             <div className="text-xs text-gray-500 font-medium">Qty: {order.quantity}</div>
-                            {order.customerMessage ? (
-                              <button 
-                                onClick={() => viewCustomerMessage(order)}
-                                className="text-xs text-primary-600 flex items-center mt-1 bg-blue-50 px-2 py-1 rounded-md"
-                              >
-                                <MessageSquare className="h-3 w-3 mr-1" />
-                                View customer message
-                              </button>
-                            ) : (
-                              <div className="text-xs text-gray-400 mt-1">No customer message</div>
-                            )}
+                            <button 
+                              onClick={() => viewCustomerMessage(order)}
+                              className="text-xs text-primary-600 flex items-center mt-1 bg-blue-50 px-2 py-1 rounded-md"
+                            >
+                              <MessageSquare className="h-3 w-3 mr-1" />
+                              View customer details
+                            </button>
                           </div>
                         </div>
                       </td>
@@ -234,19 +230,28 @@ export default function SellerOrders() {
         </Card>
       )}
 
-      {/* Customer Message Dialog */}
+      {/* Customer Details Dialog */}
       <Dialog open={messageDialogOpen} onOpenChange={setMessageDialogOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Customer Message</DialogTitle>
+            <DialogTitle>Customer Details</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="p-4 bg-blue-50 rounded-md border border-blue-100">
               <div className="flex items-center mb-2">
                 <User className="h-4 w-4 text-blue-600 mr-2" />
-                <p className="font-medium text-blue-900">From: {selectedOrder?.customerName}</p>
+                <p className="font-medium text-blue-900">Customer: {selectedOrder?.customerName}</p>
               </div>
-              <p className="text-gray-700 italic">"{selectedOrder?.customerMessage}"</p>
+              <div className="flex items-start mb-2">
+                <MapPin className="h-4 w-4 text-blue-600 mr-2 mt-0.5 flex-shrink-0" />
+                <p className="text-gray-700">Shipping Address: {selectedOrder?.address}</p>
+              </div>
+              {selectedOrder?.customerMessage && (
+                <div>
+                  <p className="font-medium text-blue-900 mb-1">Message:</p>
+                  <p className="text-gray-700 italic bg-white p-2 rounded border border-blue-100">"{selectedOrder.customerMessage}"</p>
+                </div>
+              )}
             </div>
             
             <div className="p-4 bg-gray-50 rounded-md border border-gray-100">
