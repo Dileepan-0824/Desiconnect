@@ -33,29 +33,7 @@ export default function CustomerOrders() {
     enabled: !!token && !!user,
   });
   
-  // Create test orders for demonstration
-  const createTestOrdersMutation = useMutation({
-    mutationFn: async () => {
-      const response = await apiRequest("POST", "/api/test/create-orders");
-      return response.json();
-    },
-    onSuccess: () => {
-      toast({
-        title: "Test Orders Created",
-        description: "Sample orders have been created for demonstration purposes",
-        variant: "default",
-      });
-      // Refresh the orders list
-      queryClient.invalidateQueries({ queryKey: ["/api/customer/orders"] });
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: `Failed to create test orders: ${(error as Error).message}`,
-        variant: "destructive",
-      });
-    }
-  });
+
 
   if (isLoading) {
     return (
@@ -124,24 +102,7 @@ export default function CustomerOrders() {
                   <Button onClick={() => navigate("/products")} size="lg">
                     Shop Now
                   </Button>
-                  <Button 
-                    variant="secondary" 
-                    size="lg"
-                    onClick={() => createTestOrdersMutation.mutate()}
-                    disabled={createTestOrdersMutation.isPending}
-                  >
-                    {createTestOrdersMutation.isPending ? (
-                      <>
-                        <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
-                        Creating...
-                      </>
-                    ) : (
-                      <>
-                        <Plus className="h-4 w-4 mr-2" />
-                        Create Test Orders
-                      </>
-                    )}
-                  </Button>
+
                 </div>
               </div>
             </CardContent>
@@ -275,23 +236,7 @@ export default function CustomerOrders() {
                 <Button variant="outline" onClick={() => navigate("/products")}>
                   Continue Shopping
                 </Button>
-                <Button 
-                  variant="secondary" 
-                  onClick={() => createTestOrdersMutation.mutate()}
-                  disabled={createTestOrdersMutation.isPending}
-                >
-                  {createTestOrdersMutation.isPending ? (
-                    <>
-                      <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
-                      Creating...
-                    </>
-                  ) : (
-                    <>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Test Orders
-                    </>
-                  )}
-                </Button>
+
                 <Button 
                   variant="default"
                   className="bg-primary hover:bg-primary-dark"
