@@ -12,13 +12,32 @@ import { AlertCircle, Check } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 
 const registerSchema = z.object({
-  email: z.string().email({ message: "Please enter a valid email address" }),
-  password: z.string().min(8, { message: "Password must be at least 8 characters long" }),
-  confirmPassword: z.string().min(8, { message: "Please confirm your password" }),
-  businessName: z.string().min(3, { message: "Business name must be at least 3 characters long" }),
-  phoneNumber: z.string().min(10, { message: "Please enter a valid phone number" }),
-  address: z.string().min(5, { message: "Address must be at least 5 characters" }),
-  description: z.string().optional(),
+  email: z.string()
+    .min(1, { message: "Email is required" })
+    .email({ message: "Please enter a valid email address" }),
+  password: z.string()
+    .min(8, { message: "Password must be at least 8 characters long" })
+    .regex(/[A-Z]/, { message: "Password must contain at least one uppercase letter" })
+    .regex(/[a-z]/, { message: "Password must contain at least one lowercase letter" })
+    .regex(/[0-9]/, { message: "Password must contain at least one number" })
+    .regex(/[^A-Za-z0-9]/, { message: "Password must contain at least one special character" }),
+  confirmPassword: z.string()
+    .min(1, { message: "Please confirm your password" }),
+  businessName: z.string()
+    .min(3, { message: "Business name must be at least 3 characters long" })
+    .max(100, { message: "Business name cannot exceed 100 characters" }),
+  phoneNumber: z.string()
+    .min(1, { message: "Phone number is required" })
+    .regex(/^[6-9]\d{9}$/, { 
+      message: "Please enter a valid 10-digit Indian mobile number (starting with 6, 7, 8, or 9)" 
+    }),
+  address: z.string()
+    .min(5, { message: "Address must be at least 5 characters" })
+    .max(200, { message: "Address cannot exceed 200 characters" }),
+  description: z.string()
+    .min(1, { message: "Business description is required" })
+    .min(20, { message: "Description must be at least 20 characters" })
+    .max(500, { message: "Description cannot exceed 500 characters" }),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords do not match",
   path: ["confirmPassword"],
@@ -128,7 +147,7 @@ export default function SellerRegister() {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email</FormLabel>
+                      <FormLabel>Email <span className="text-red-500">*</span></FormLabel>
                       <FormControl>
                         <Input 
                           placeholder="your@email.com" 
@@ -146,7 +165,7 @@ export default function SellerRegister() {
                   name="businessName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Business Name</FormLabel>
+                      <FormLabel>Business Name <span className="text-red-500">*</span></FormLabel>
                       <FormControl>
                         <Input 
                           placeholder="Your business name" 
@@ -165,7 +184,7 @@ export default function SellerRegister() {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Password</FormLabel>
+                      <FormLabel>Password <span className="text-red-500">*</span></FormLabel>
                       <FormControl>
                         <Input 
                           placeholder="Create a password" 
@@ -174,6 +193,16 @@ export default function SellerRegister() {
                         />
                       </FormControl>
                       <FormMessage />
+                      <div className="text-xs text-muted-foreground mt-1">
+                        Password must contain:
+                        <ul className="pl-4 mt-1 list-disc">
+                          <li>At least 8 characters</li>
+                          <li>At least one uppercase letter (A-Z)</li>
+                          <li>At least one lowercase letter (a-z)</li>
+                          <li>At least one number (0-9)</li>
+                          <li>At least one special character</li>
+                        </ul>
+                      </div>
                     </FormItem>
                   )}
                 />
@@ -183,7 +212,7 @@ export default function SellerRegister() {
                   name="confirmPassword"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Confirm Password</FormLabel>
+                      <FormLabel>Confirm Password <span className="text-red-500">*</span></FormLabel>
                       <FormControl>
                         <Input 
                           placeholder="Confirm your password" 
@@ -202,14 +231,17 @@ export default function SellerRegister() {
                 name="phoneNumber"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Phone Number</FormLabel>
+                    <FormLabel>Phone Number <span className="text-red-500">*</span></FormLabel>
                     <FormControl>
                       <Input 
-                        placeholder="Your phone number" 
+                        placeholder="10-digit mobile number" 
                         {...field} 
                       />
                     </FormControl>
                     <FormMessage />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Please enter a valid 10-digit Indian mobile number (e.g., 9876543210)
+                    </p>
                   </FormItem>
                 )}
               />
@@ -219,10 +251,10 @@ export default function SellerRegister() {
                 name="address"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Business Address</FormLabel>
+                    <FormLabel>Business Address <span className="text-red-500">*</span></FormLabel>
                     <FormControl>
                       <Input 
-                        placeholder="Your business address" 
+                        placeholder="Your complete business address" 
                         {...field} 
                       />
                     </FormControl>
@@ -236,15 +268,18 @@ export default function SellerRegister() {
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Business Description (Optional)</FormLabel>
+                    <FormLabel>Business Description <span className="text-red-500">*</span></FormLabel>
                     <FormControl>
                       <Textarea 
-                        placeholder="Tell us about your business and products" 
+                        placeholder="Tell us about your business, products, and what makes you unique (minimum 20 characters)" 
                         {...field} 
-                        className="min-h-[100px]"
+                        className="min-h-[120px]"
                       />
                     </FormControl>
                     <FormMessage />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Describe your business, products, and why customers should shop with you.
+                    </p>
                   </FormItem>
                 )}
               />
