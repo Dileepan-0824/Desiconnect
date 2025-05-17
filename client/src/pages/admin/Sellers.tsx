@@ -108,9 +108,6 @@ export default function AdminSellers() {
     }
   });
 
-  // Direct implementation without using the handleViewSeller function
-  // We'll use the direct approach in the button click event
-
   // Seller approval mutation
   const approveSellerMutation = useMutation({
     mutationFn: async (sellerId: number) => {
@@ -451,61 +448,93 @@ export default function AdminSellers() {
               </Table>
             </>
           ) : (
-            <div className="py-24 flex flex-col items-center justify-center text-center">
+            <div className="flex flex-col items-center justify-center p-8 text-center">
               <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium">No active sellers found</h3>
-              <p className="text-muted-foreground">
-                There are no active sellers on the platform yet. Add your first seller using the "Add Seller" button.
+              <h3 className="text-lg font-semibold">No Active Sellers</h3>
+              <p className="text-muted-foreground mt-2 mb-4">
+                There are no active or pending sellers to display.
               </p>
+              <Button 
+                onClick={() => setCreateDialogOpen(true)}
+                className="flex items-center"
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Add Your First Seller
+              </Button>
             </div>
           )}
         </CardContent>
       </Card>
 
-      {/* Seller Rejection Confirmation Dialog */}
-      <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
+      {/* Approve Seller Dialog */}
+      <Dialog open={approveDialogOpen} onOpenChange={setApproveDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Confirm Seller Rejection</DialogTitle>
+            <DialogTitle>Approve Seller</DialogTitle>
             <DialogDescription>
-              Are you sure you want to reject this seller? This action will prevent the seller from listing products on the platform.
+              Are you sure you want to approve this seller? They will be able to list products on the platform.
             </DialogDescription>
           </DialogHeader>
           
           {selectedSeller && (
-            <div className="my-4 p-4 bg-red-50 rounded-md border border-red-200">
-              <h3 className="font-medium text-red-800">
-                {selectedSeller.businessName}
-              </h3>
-              <p className="text-sm text-red-700 mt-1">
-                {selectedSeller.email}
-              </p>
+            <div className="py-4">
+              <p className="font-medium">{selectedSeller.businessName}</p>
+              <p className="text-sm text-muted-foreground">{selectedSeller.email}</p>
             </div>
           )}
           
           <DialogFooter>
-            <Button 
-              variant="outline" 
-              onClick={() => setRejectDialogOpen(false)}
+            <Button variant="outline" onClick={() => setApproveDialogOpen(false)}>Cancel</Button>
+            <Button
+              onClick={() => {
+                if (selectedSeller) {
+                  handleApproveSeller(selectedSeller.id);
+                }
+              }}
+              disabled={processingId !== null}
+              className="bg-green-600 hover:bg-green-700 text-white"
             >
-              Cancel
+              {processingId !== null ? "Processing..." : "Approve Seller"}
             </Button>
-            <Button 
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Reject Seller Dialog */}
+      <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reject Seller</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to reject this seller? They will not be able to list products and will be removed from this list.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedSeller && (
+            <div className="py-4">
+              <p className="font-medium">{selectedSeller.businessName}</p>
+              <p className="text-sm text-muted-foreground">{selectedSeller.email}</p>
+            </div>
+          )}
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRejectDialogOpen(false)}>Cancel</Button>
+            <Button
               variant="destructive"
               onClick={() => {
                 if (selectedSeller) {
                   handleRejectSeller(selectedSeller.id);
                 }
               }}
-              disabled={rejectSellerMutation.isPending}
+              disabled={processingId !== null}
             >
-              {rejectSellerMutation.isPending ? "Rejecting..." : "Confirm Rejection"}
+              {processingId !== null ? "Processing..." : "Reject Seller"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
       
-      {/* Replace with the new SellerDetailsDialog component */}
+      {/* New Seller Details Dialog */}
       <SellerDetailsDialog
         open={viewDialogOpen}
         onOpenChange={setViewDialogOpen}
