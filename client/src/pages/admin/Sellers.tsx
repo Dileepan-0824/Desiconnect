@@ -507,44 +507,68 @@ export default function AdminSellers() {
           </DialogHeader>
           
           {selectedSeller && (
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-lg font-bold">{selectedSeller.businessName}</h3>
-                <p className="text-sm text-muted-foreground">
+            <div className="space-y-6">
+              <div className="border-b pb-4">
+                <h3 className="text-xl font-bold">{selectedSeller.businessName}</h3>
+                <div className="flex items-center mt-1">
+                  <div className={`h-2 w-2 rounded-full mr-2 ${
+                    selectedSeller.approved ? 'bg-green-500' : 
+                    selectedSeller.rejected ? 'bg-red-500' : 'bg-amber-500'
+                  }`}></div>
+                  <p className="text-sm font-medium">
+                    {selectedSeller.approved ? 'Approved' : 
+                     selectedSeller.rejected ? 'Rejected' : 'Pending Approval'}
+                  </p>
+                </div>
+                <p className="text-sm text-muted-foreground mt-2">
                   Joined on {selectedSeller.createdAt 
                     ? new Date(selectedSeller.createdAt).toLocaleDateString() 
                     : "N/A"}
                 </p>
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Email</p>
-                  <p>{selectedSeller.email}</p>
+              <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-muted-foreground">Email Address</p>
+                  <p className="font-medium">{selectedSeller.email}</p>
                 </div>
                 
-                <div>
-                  <p className="text-sm text-muted-foreground">Phone</p>
-                  <p>{selectedSeller.phoneNumber || "N/A"}</p>
-                </div>
-                
-                <div className="col-span-2">
-                  <p className="text-sm text-muted-foreground">Address</p>
-                  <p>{selectedSeller.address || "N/A"}</p>
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-muted-foreground">Phone Number</p>
+                  <p className="font-medium">{selectedSeller.phoneNumber || "Not provided"}</p>
                 </div>
               </div>
               
-              <div>
-                <p className="text-sm text-muted-foreground">Business Details</p>
-                <div className="grid grid-cols-2 gap-4 mt-2">
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-muted-foreground">Business Address</p>
+                <p className="font-medium">{selectedSeller.address || "Not provided"}</p>
+              </div>
+              
+              {selectedSeller.description && (
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-muted-foreground">Business Description</p>
+                  <p>{selectedSeller.description}</p>
+                </div>
+              )}
+              
+              {selectedSeller.gstNumber && (
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-muted-foreground">GST Number</p>
+                  <p className="font-medium">{selectedSeller.gstNumber}</p>
+                </div>
+              )}
+              
+              <div className="bg-gray-50 p-4 rounded-md border">
+                <p className="text-sm font-medium mb-3">Business Statistics</p>
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm font-medium">Total Products</p>
-                    <p>{selectedSeller.totalProducts || 0}</p>
+                    <p className="text-sm text-muted-foreground">Total Products</p>
+                    <p className="text-xl font-bold">{selectedSeller.totalProducts || 0}</p>
                   </div>
                   
                   <div>
-                    <p className="text-sm font-medium">Total Orders</p>
-                    <p>{selectedSeller.totalOrders || 0}</p>
+                    <p className="text-sm text-muted-foreground">Total Orders</p>
+                    <p className="text-xl font-bold">{selectedSeller.totalOrders || 0}</p>
                   </div>
                   
                   <div>

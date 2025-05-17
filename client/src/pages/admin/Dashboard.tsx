@@ -50,7 +50,7 @@ export default function AdminDashboard() {
           <CardContent>
             <div className="text-2xl font-bold">{stats?.totalSellers || 0}</div>
             <p className="text-xs text-muted-foreground">
-              {stats?.newSellers || 0} new this month
+              Active sellers on platform
             </p>
           </CardContent>
         </Card>

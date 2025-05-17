@@ -170,6 +170,20 @@ export const loginSeller = async (req: Request, res: Response) => {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
+    // Check if the seller account is rejected
+    if (seller.rejected) {
+      return res.status(403).json({ 
+        message: 'Your seller account has been rejected. Please contact support for more information.' 
+      });
+    }
+
+    // Check if the seller account is approved
+    if (!seller.approved) {
+      return res.status(403).json({ 
+        message: 'Your seller account is pending approval. You will be notified once approved.' 
+      });
+    }
+
     const passwordMatch = await comparePassword(password, seller.password);
     if (!passwordMatch) {
       return res.status(401).json({ message: 'Invalid credentials' });
