@@ -353,7 +353,7 @@ export default function AdminOrders() {
                             : 'N/A'}
                         </TableCell>
                         <TableCell>₹{order.totalAmount?.toFixed(2) || '0.00'}</TableCell>
-                        <TableCell>{order.seller?.businessName || "Seller #" + order.sellerId}</TableCell>
+                        <TableCell>{order.seller?.businessName || "Unknown Seller"}</TableCell>
                         <TableCell>
                           {order.trackingNumber ? (
                             <span className="text-green-600 font-medium">{order.trackingNumber}</span>
@@ -481,51 +481,47 @@ export default function AdminOrders() {
                     <h3 className="text-sm font-medium text-muted-foreground mb-2">Process Order</h3>
                     <div className="border rounded-md p-3 bg-green-50 border-green-100">
                       <div className="flex flex-col space-y-4">
-                        <Form {...form}>
-                          <form className="space-y-3">
-                            <FormField
-                              control={form.control}
-                              name="trackingNumber"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Tracking Number*</FormLabel>
-                                  <FormControl>
-                                    <div className="flex space-x-2">
-                                      <Input 
-                                        placeholder="Enter tracking number (Format: TR-XXXXXX-YYYYMMDD)" 
-                                        {...field}
-                                      />
-                                      <Button 
-                                        type="button" 
-                                        variant="outline" 
-                                        onClick={() => {
-                                          form.setValue('trackingNumber', generateTrackingNumber());
-                                        }}
-                                      >
-                                        Generate
-                                      </Button>
-                                    </div>
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
+                        <div className="space-y-3">
+                          <div>
+                            <label className="text-sm font-medium">Tracking Number*</label>
+                            <div className="flex space-x-2 mt-1">
+                              <Input 
+                                placeholder="Format: TR-XXXXXX-YYYYMMDD" 
+                                value={form.watch("trackingNumber")} 
+                                onChange={(e) => form.setValue("trackingNumber", e.target.value)}
+                              />
+                              <Button 
+                                type="button" 
+                                variant="outline" 
+                                onClick={() => {
+                                  form.setValue('trackingNumber', generateTrackingNumber());
+                                }}
+                              >
+                                Generate
+                              </Button>
+                            </div>
+                            {form.formState.errors.trackingNumber && (
+                              <p className="text-sm font-medium text-red-500 mt-1">
+                                {form.formState.errors.trackingNumber.message}
+                              </p>
+                            )}
+                          </div>
+                          
+                          <div>
+                            <label className="text-sm font-medium">Shipping Carrier*</label>
+                            <Input 
+                              placeholder="Enter shipping carrier name" 
+                              className="mt-1"
+                              value={form.watch("carrier")} 
+                              onChange={(e) => form.setValue("carrier", e.target.value)}
                             />
-                            
-                            <FormField
-                              control={form.control}
-                              name="carrier"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Shipping Carrier*</FormLabel>
-                                  <FormControl>
-                                    <Input placeholder="Enter shipping carrier name" {...field} />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </form>
-                        </Form>
+                            {form.formState.errors.carrier && (
+                              <p className="text-sm font-medium text-red-500 mt-1">
+                                {form.formState.errors.carrier.message}
+                              </p>
+                            )}
+                          </div>
+                        </div>
                         
                         <Button 
                           size="sm"
@@ -533,10 +529,20 @@ export default function AdminOrders() {
                           onClick={() => {
                             const trackingData = form.getValues();
                             
-                            if (!trackingData.trackingNumber || !trackingData.carrier) {
+                            // Check if tracking number matches format
+                            if (!/^TR-\d{6}-\d{8}$/.test(trackingData.trackingNumber)) {
+                              toast({
+                                title: "Invalid Tracking Number",
+                                description: "Tracking number must follow format: TR-XXXXXX-YYYYMMDD",
+                                variant: "destructive",
+                              });
+                              return;
+                            }
+                            
+                            if (!trackingData.carrier || trackingData.carrier.length < 2) {
                               toast({
                                 title: "Missing Information",
-                                description: "Please enter a tracking number and carrier",
+                                description: "Please enter a valid carrier name",
                                 variant: "destructive",
                               });
                               return;
