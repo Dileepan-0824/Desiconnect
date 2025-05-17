@@ -37,11 +37,27 @@ import { z } from "zod";
 import { format } from "date-fns";
 
 const trackingSchema = z.object({
-  trackingNumber: z.string().min(5, { message: "Tracking number must be at least 5 characters" }),
+  trackingNumber: z.string()
+    .min(5, { message: "Tracking number must be at least 5 characters" })
+    .refine(
+      (val) => /^TR-\d{6}-\d{8}$/.test(val),
+      { message: "Tracking number must follow format: TR-XXXXXX-YYYYMMDD" }
+    ),
   carrier: z.string().min(2, { message: "Carrier name is required" }),
 });
 
 type TrackingForm = z.infer<typeof trackingSchema>;
+
+// Helper function to generate a properly formatted tracking number
+const generateTrackingNumber = (): string => {
+  const random = Math.floor(100000 + Math.random() * 900000); // 6-digit random number
+  const date = new Date();
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  
+  return `TR-${random}-${year}${month}${day}`;
+};
 
 export default function AdminOrders() {
   const { user, token } = useAuth();
@@ -410,12 +426,24 @@ export default function AdminOrders() {
                 <div>
                   <h3 className="text-sm font-medium text-muted-foreground mb-2">Seller Information</h3>
                   <div className="border rounded-md p-3 bg-gray-50">
-                    <p className="font-medium">{selectedOrder.product?.seller?.businessName || selectedOrder.seller?.businessName || selectedOrder.sellerName || "Seller #" + selectedOrder.sellerId}</p>
+                    <p className="font-medium">{selectedOrder.product?.seller?.businessName || selectedOrder.seller?.businessName || selectedOrder.sellerName || "Unknown Seller"}</p>
                     {selectedOrder.seller?.email && (
                       <p className="text-sm">{selectedOrder.seller.email}</p>
                     )}
                     {selectedOrder.seller?.phone && (
-                      <p className="text-sm">{selectedOrder.seller.phone}</p>
+                      <p className="text-sm">Phone: {selectedOrder.seller.phone}</p>
+                    )}
+                    {selectedOrder.seller?.businessAddress && (
+                      <>
+                        <p className="mt-2 text-xs font-medium text-gray-500">Business Address:</p>
+                        <p className="text-sm">{selectedOrder.seller.businessAddress}</p>
+                      </>
+                    )}
+                    {selectedOrder.seller?.warehouseAddress && (
+                      <>
+                        <p className="mt-2 text-xs font-medium text-gray-500">Warehouse Address:</p>
+                        <p className="text-sm">{selectedOrder.seller.warehouseAddress}</p>
+                      </>
                     )}
                   </div>
                 </div>
@@ -452,13 +480,69 @@ export default function AdminOrders() {
                   <div>
                     <h3 className="text-sm font-medium text-muted-foreground mb-2">Process Order</h3>
                     <div className="border rounded-md p-3 bg-green-50 border-green-100">
-                      <div className="flex flex-col space-y-2">
+                      <div className="flex flex-col space-y-4">
+                        <Form {...form}>
+                          <form className="space-y-3">
+                            <FormField
+                              control={form.control}
+                              name="trackingNumber"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Tracking Number*</FormLabel>
+                                  <FormControl>
+                                    <div className="flex space-x-2">
+                                      <Input 
+                                        placeholder="Enter tracking number (Format: TR-XXXXXX-YYYYMMDD)" 
+                                        {...field}
+                                      />
+                                      <Button 
+                                        type="button" 
+                                        variant="outline" 
+                                        onClick={() => {
+                                          form.setValue('trackingNumber', generateTrackingNumber());
+                                        }}
+                                      >
+                                        Generate
+                                      </Button>
+                                    </div>
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            
+                            <FormField
+                              control={form.control}
+                              name="carrier"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Shipping Carrier*</FormLabel>
+                                  <FormControl>
+                                    <Input placeholder="Enter shipping carrier name" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </form>
+                        </Form>
+                        
                         <Button 
                           size="sm"
                           className="bg-green-600 hover:bg-green-700 text-white"
                           onClick={() => {
-                            // Logic to approve and fulfill the order
-                            // Call API to update order status
+                            const trackingData = form.getValues();
+                            
+                            if (!trackingData.trackingNumber || !trackingData.carrier) {
+                              toast({
+                                title: "Missing Information",
+                                description: "Please enter a tracking number and carrier",
+                                variant: "destructive",
+                              });
+                              return;
+                            }
+                            
+                            // Call API to update order status with tracking info
                             fetch(`/api/admin/orders/${selectedOrder.id}/tracking`, {
                               method: 'PUT',
                               headers: {
@@ -466,7 +550,8 @@ export default function AdminOrders() {
                                 'Authorization': `Bearer ${token}`
                               },
                               body: JSON.stringify({ 
-                                trackingNumber: selectedOrder.trackingNumber,
+                                trackingNumber: trackingData.trackingNumber,
+                                carrier: trackingData.carrier,
                                 status: 'fulfilled'
                               })
                             })
