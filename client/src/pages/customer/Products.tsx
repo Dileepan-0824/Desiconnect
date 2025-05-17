@@ -15,7 +15,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { getApprovedProducts, getProductsByCategory, searchProducts, updateCart } from "@/lib/api";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, getImageUrl } from "@/lib/utils";
 import { queryClient } from "@/lib/queryClient";
 import { Search, ShoppingCart, Filter, Package } from "lucide-react";
 

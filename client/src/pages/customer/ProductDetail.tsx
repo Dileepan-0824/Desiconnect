@@ -11,7 +11,7 @@ import { queryClient } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/use-auth";
 import { useCart } from "@/hooks/use-cart";
 import { useToast } from "@/hooks/use-toast";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, getImageUrl } from "@/lib/utils";
 import {
   ShoppingCart,
   Truck,
@@ -230,7 +230,7 @@ export default function ProductDetail() {
           <div className="bg-white p-4 rounded-lg shadow-sm">
             {product.image ? (
               <img 
-                src={`http://localhost:5000${product.image}`} 
+                src={getImageUrl(product.image)} 
                 alt={product.name} 
                 className="w-full h-auto object-contain rounded-md max-h-96"
               />
