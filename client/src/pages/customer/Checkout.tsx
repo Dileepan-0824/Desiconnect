@@ -24,6 +24,17 @@ const checkoutSchema = z.object({
 
 type CheckoutForm = z.infer<typeof checkoutSchema>;
 
+interface CartData {
+  items: {
+    id: number;
+    name: string;
+    price: number | string;
+    quantity: number;
+    image?: string;
+    sellerId?: number;
+  }[];
+}
+
 export default function CustomerCheckout() {
   const { user, token } = useAuth();
   const [, navigate] = useLocation();
@@ -44,13 +55,13 @@ export default function CustomerCheckout() {
   });
 
   // Fetch cart data
-  const { data: cartData } = useQuery({
+  const { data: cartData } = useQuery<CartData>({
     queryKey: ["/api/customer/cart"],
     enabled: !!token && !!user,
   });
 
   useEffect(() => {
-    if (cartData && cartData.items) {
+    if (cartData && typeof cartData === 'object' && 'items' in cartData && cartData.items) {
       const items = Array.isArray(cartData.items) ? cartData.items : [];
       setCartItems(items);
       

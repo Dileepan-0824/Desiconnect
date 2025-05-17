@@ -318,10 +318,11 @@ export default function SellerProfile() {
                 <Input
                   id="businessName"
                   value={businessName}
-                  onChange={(e) => setBusinessName(e.target.value)}
-                  placeholder="Your Business Name"
-                  className="mt-1"
+                  readOnly
+                  disabled
+                  className="mt-1 bg-gray-50"
                 />
+                <p className="text-sm text-gray-500 mt-1">Business name cannot be changed</p>
               </div>
               <div>
                 <Label htmlFor="email" className="flex items-center">
