@@ -256,6 +256,8 @@ export const getAllOrders = async (req: Request, res: Response) => {
           ...order,
           productName: product?.name || 'Unknown Product',
           sellerBusinessName: seller?.businessName || 'Unknown Seller',
+          // Ensure price is consistent for the frontend
+          totalPrice: parseFloat(String(order.totalPrice))
         };
       })
     );
@@ -286,6 +288,8 @@ export const getOrdersByStatus = async (req: Request, res: Response) => {
           ...order,
           productName: product?.name || 'Unknown Product',
           sellerBusinessName: seller?.businessName || 'Unknown Seller',
+          // Map database total_price to totalPrice for consistent frontend access
+          totalPrice: order.total_price
         };
       })
     );

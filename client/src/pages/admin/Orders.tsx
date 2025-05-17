@@ -293,7 +293,7 @@ export default function AdminOrders() {
                             ? format(new Date(order.createdAt), 'MMM dd, yyyy') 
                             : 'N/A'}
                         </TableCell>
-                        <TableCell>₹{order.totalAmount?.toFixed(2) || '0.00'}</TableCell>
+                        <TableCell>₹{order.totalPrice || order.total_price || '0.00'}</TableCell>
                         <TableCell>{order.seller?.businessName || "Unknown"}</TableCell>
                         <TableCell>
                           <Button 
