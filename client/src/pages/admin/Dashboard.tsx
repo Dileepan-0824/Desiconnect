@@ -2,18 +2,31 @@ import { useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { 
   ShoppingBag, 
   Users, 
   ShoppingCart, 
   DollarSign, 
-  Package
+  Package,
+  LogOut
 } from "lucide-react";
 
 export default function AdminDashboard() {
-  const { user, token } = useAuth();
+  const { user, token, logout } = useAuth();
+  const { toast } = useToast();
+  const [_, navigate] = useLocation();
+  
+  const handleLogout = () => {
+    logout();
+    navigate("/admin/login");
+    toast({
+      title: "Logged out",
+      description: "You have been successfully logged out of the admin panel."
+    });
+  };
   
   // Fetch admin stats
   const { data: stats, isLoading } = useQuery({
@@ -66,7 +79,7 @@ export default function AdminDashboard() {
             <CardDescription>Manage key aspects of the platform</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <Link href="/admin/sellers">
                 <div className="p-4 border rounded-lg hover:bg-accent hover:cursor-pointer transition-colors">
                   <Users className="h-8 w-8 mb-2" />
@@ -96,6 +109,17 @@ export default function AdminDashboard() {
                   </p>
                 </div>
               </Link>
+              
+              <div 
+                className="p-4 border rounded-lg hover:bg-red-50 hover:border-red-200 hover:cursor-pointer transition-colors"
+                onClick={() => handleLogout()}
+              >
+                <LogOut className="h-8 w-8 mb-2 text-red-500" />
+                <h3 className="font-medium">Logout</h3>
+                <p className="text-sm text-muted-foreground">
+                  Sign out of your admin account
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>
