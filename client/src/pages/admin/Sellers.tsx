@@ -364,9 +364,17 @@ export default function AdminSellers() {
                 <TableBody>
                   {activeSellers.map((seller: any) => (
                     <TableRow key={seller.id}>
-                      <TableCell className="font-medium">{seller.businessName}</TableCell>
+                      <TableCell className="font-medium">
+                        <div className="flex items-center space-x-2">
+                          <div className={`w-2 h-2 rounded-full ${
+                            seller.approved ? 'bg-green-500' : 
+                            seller.rejected ? 'bg-red-500' : 'bg-amber-500'
+                          }`}></div>
+                          <span>{seller.businessName}</span>
+                        </div>
+                      </TableCell>
                       <TableCell>{seller.email}</TableCell>
-                      <TableCell>{seller.phoneNumber || "N/A"}</TableCell>
+                      <TableCell>{seller.phoneNumber || "No Phone"}</TableCell>
                       <TableCell>
                         {seller.createdAt 
                           ? new Date(seller.createdAt).toLocaleDateString() 
@@ -498,84 +506,150 @@ export default function AdminSellers() {
       
       {/* Seller Detail Dialog */}
       <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-3xl">
           <DialogHeader>
-            <DialogTitle>Seller Details</DialogTitle>
+            <DialogTitle className="text-2xl">Seller Business Details</DialogTitle>
             <DialogDescription>
-              Detailed information about the seller
+              Complete information about the seller and their business
             </DialogDescription>
           </DialogHeader>
           
           {selectedSeller && (
             <div className="space-y-6">
-              <div className="border-b pb-4">
-                <h3 className="text-xl font-bold">{selectedSeller.businessName}</h3>
-                <div className="flex items-center mt-1">
-                  <div className={`h-2 w-2 rounded-full mr-2 ${
-                    selectedSeller.approved ? 'bg-green-500' : 
-                    selectedSeller.rejected ? 'bg-red-500' : 'bg-amber-500'
-                  }`}></div>
-                  <p className="text-sm font-medium">
-                    {selectedSeller.approved ? 'Approved' : 
-                     selectedSeller.rejected ? 'Rejected' : 'Pending Approval'}
-                  </p>
+              <div className="bg-gray-50 border p-6 rounded-md">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="text-2xl font-bold">{selectedSeller.businessName}</h3>
+                    <div className="flex items-center mt-2">
+                      <div className={`h-3 w-3 rounded-full mr-2 ${
+                        selectedSeller.approved ? 'bg-green-500' : 
+                        selectedSeller.rejected ? 'bg-red-500' : 'bg-amber-500'
+                      }`}></div>
+                      <p className="text-sm font-bold">
+                        STATUS: {selectedSeller.approved ? 'APPROVED' : 
+                         selectedSeller.rejected ? 'REJECTED' : 'PENDING APPROVAL'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="bg-white px-4 py-2 rounded border text-sm">
+                    <p>Member since:</p>
+                    <p className="font-bold">{selectedSeller.createdAt 
+                      ? new Date(selectedSeller.createdAt).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'long', 
+                          day: 'numeric'
+                        })
+                      : "N/A"}
+                    </p>
+                  </div>
                 </div>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Joined on {selectedSeller.createdAt 
-                    ? new Date(selectedSeller.createdAt).toLocaleDateString() 
-                    : "N/A"}
-                </p>
               </div>
               
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-1">
-                  <p className="text-sm font-medium text-muted-foreground">Email Address</p>
-                  <p className="font-medium">{selectedSeller.email}</p>
+              <div className="grid grid-cols-2 gap-6 mt-6">
+                <div className="border rounded-md p-4">
+                  <h4 className="font-bold text-gray-700 border-b pb-2 mb-4">Contact Information</h4>
+                  <div className="space-y-4">
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">Email Address</p>
+                      <p className="font-medium text-gray-900">{selectedSeller.email}</p>
+                    </div>
+                    
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">Phone Number</p>
+                      <p className="font-medium text-gray-900">{selectedSeller.phoneNumber || "Not provided"}</p>
+                    </div>
+                    
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">Business Address</p>
+                      <p className="font-medium text-gray-900">{selectedSeller.address || "Not provided"}</p>
+                    </div>
+                  </div>
                 </div>
                 
-                <div className="space-y-1">
-                  <p className="text-sm font-medium text-muted-foreground">Phone Number</p>
-                  <p className="font-medium">{selectedSeller.phoneNumber || "Not provided"}</p>
+                <div className="border rounded-md p-4">
+                  <h4 className="font-bold text-gray-700 border-b pb-2 mb-4">Business Information</h4>
+                  <div className="space-y-4">
+                    {selectedSeller.description && (
+                      <div>
+                        <p className="text-sm font-medium text-gray-500">Description</p>
+                        <p className="text-gray-900">{selectedSeller.description}</p>
+                      </div>
+                    )}
+                    
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">GST Number</p>
+                      <p className="font-medium text-gray-900">{selectedSeller.gstNumber || "Not provided"}</p>
+                    </div>
+                    
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">Registration Status</p>
+                      <p className="font-medium text-gray-900">{
+                        selectedSeller.approved 
+                          ? "Fully Registered" 
+                          : selectedSeller.rejected 
+                          ? "Registration Rejected" 
+                          : "Pending Registration"
+                      }</p>
+                    </div>
+                  </div>
                 </div>
               </div>
               
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-muted-foreground">Business Address</p>
-                <p className="font-medium">{selectedSeller.address || "Not provided"}</p>
+              <div className="bg-blue-50 p-6 rounded-md border border-blue-100">
+                <h4 className="font-bold text-blue-800 border-b border-blue-200 pb-2 mb-4">Business Performance</h4>
+                <div className="grid grid-cols-3 gap-6">
+                  <div className="bg-white p-4 rounded-md border">
+                    <p className="text-sm text-gray-500">Total Products</p>
+                    <p className="text-2xl font-bold text-blue-600">{selectedSeller.totalProducts || 0}</p>
+                  </div>
+                  
+                  <div className="bg-white p-4 rounded-md border">
+                    <p className="text-sm text-gray-500">Total Orders</p>
+                    <p className="text-2xl font-bold text-blue-600">{selectedSeller.totalOrders || 0}</p>
+                  </div>
+                  
+                  <div className="bg-white p-4 rounded-md border">
+                    <p className="text-sm text-gray-500">Total Revenue</p>
+                    <p className="text-2xl font-bold text-blue-600">₹{selectedSeller.totalRevenue?.toLocaleString() || "0"}</p>
+                  </div>
+                </div>
               </div>
               
-              {selectedSeller.description && (
-                <div className="space-y-1">
-                  <p className="text-sm font-medium text-muted-foreground">Business Description</p>
-                  <p>{selectedSeller.description}</p>
+              {/* Action Buttons */}
+              <div className="border-t pt-4 flex justify-between">
+                <div>
+                  {!selectedSeller.approved && !selectedSeller.rejected && (
+                    <div className="flex space-x-3">
+                      <Button
+                        className="bg-green-600 hover:bg-green-700 text-white"
+                        onClick={() => {
+                          setViewDialogOpen(false);
+                          if (selectedSeller) {
+                            handleApproveSeller(selectedSeller.id);
+                          }
+                        }}
+                      >
+                        Approve Seller
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        onClick={() => {
+                          setViewDialogOpen(false);
+                          setSelectedSeller(selectedSeller);
+                          setRejectDialogOpen(true);
+                        }}
+                      >
+                        Reject Seller
+                      </Button>
+                    </div>
+                  )}
                 </div>
-              )}
-              
-              {selectedSeller.gstNumber && (
-                <div className="space-y-1">
-                  <p className="text-sm font-medium text-muted-foreground">GST Number</p>
-                  <p className="font-medium">{selectedSeller.gstNumber}</p>
-                </div>
-              )}
-              
-              <div className="bg-gray-50 p-4 rounded-md border">
-                <p className="text-sm font-medium mb-3">Business Statistics</p>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Total Products</p>
-                    <p className="text-xl font-bold">{selectedSeller.totalProducts || 0}</p>
-                  </div>
-                  
-                  <div>
-                    <p className="text-sm text-muted-foreground">Total Orders</p>
-                    <p className="text-xl font-bold">{selectedSeller.totalOrders || 0}</p>
-                  </div>
-                  
-                  <div>
-                    <p className="text-sm font-medium">Total Revenue</p>
-                    <p>₹{selectedSeller.totalRevenue?.toLocaleString() || "0"}</p>
-                  </div>
-                </div>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setViewDialogOpen(false)}
+                >
+                  Close
+                </Button>
               </div>
             </div>
           )}
