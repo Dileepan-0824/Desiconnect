@@ -220,7 +220,7 @@ export default function AdminOrders() {
                             ? format(new Date(order.createdAt), 'MMM dd, yyyy') 
                             : 'N/A'}
                         </TableCell>
-                        <TableCell>₹{order.totalAmount?.toFixed(2) || '0.00'}</TableCell>
+                        <TableCell>₹{order.total?.toFixed(2) || order.totalAmount?.toFixed(2) || '0.00'}</TableCell>
                         <TableCell>{getStatusBadge(order.status)}</TableCell>
                         <TableCell>
                           <div className="flex space-x-2">
@@ -352,7 +352,7 @@ export default function AdminOrders() {
                             ? format(new Date(order.createdAt), 'MMM dd, yyyy') 
                             : 'N/A'}
                         </TableCell>
-                        <TableCell>₹{order.totalAmount?.toFixed(2) || '0.00'}</TableCell>
+                        <TableCell>₹{order.total?.toFixed(2) || order.totalAmount?.toFixed(2) || '0.00'}</TableCell>
                         <TableCell>{order.seller?.businessName || "Unknown Seller"}</TableCell>
                         <TableCell>
                           {order.trackingNumber ? (
