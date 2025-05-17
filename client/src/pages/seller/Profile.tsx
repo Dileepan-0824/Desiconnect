@@ -19,14 +19,71 @@ import {
   Building,
   FileText,
   Save,
-  AlertCircle
+  AlertCircle,
+  CheckCircle2,
+  XCircle,
+  Info
 } from "lucide-react";
 import {
   Alert,
   AlertDescription,
   AlertTitle,
 } from "@/components/ui/alert";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { queryClient } from "@/lib/queryClient";
+
+// Define SellerProfile type
+interface SellerProfile {
+  id: number;
+  email: string;
+  businessName: string;
+  phone?: string;
+  businessAddress?: string;
+  warehouseAddress?: string;
+  zipCode?: string;
+  gst?: string;
+  approved: boolean;
+  rejected: boolean;
+}
+
+// Validation utility functions
+const isValidPhoneNumber = (phone: string): boolean => {
+  // Indian phone number validation (10 digits, optionally with +91 prefix)
+  const phoneRegex = /^(?:\+91)?[6-9]\d{9}$/;
+  return phoneRegex.test(phone.replace(/\s+/g, ''));
+};
+
+const isValidGST = (gst: string): boolean => {
+  // GST format: 2 digits, 5 chars, 1 digit, 1 char, 1 digit, 1 char, 1 digit, 1 char, 1 digit
+  const gstRegex = /^\d{2}[A-Z]{5}\d{4}[A-Z]{1}[A-Z\d]{1}[Z]{1}[A-Z\d]{1}$/;
+  return gstRegex.test(gst);
+};
+
+const isValidZipCode = (zipCode: string): boolean => {
+  // Indian ZIP code (6 digits)
+  const zipCodeRegex = /^\d{6}$/;
+  return zipCodeRegex.test(zipCode);
+};
+
+const isStrongPassword = (password: string): boolean => {
+  // At least 8 characters, 1 uppercase, 1 lowercase, 1 number, 1 special char
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+  return passwordRegex.test(password);
+};
+
+// Password strength criteria
+const passwordCriteria = [
+  { id: 'length', label: 'At least 8 characters', check: (pwd: string) => pwd.length >= 8 },
+  { id: 'uppercase', label: 'At least one uppercase letter', check: (pwd: string) => /[A-Z]/.test(pwd) },
+  { id: 'lowercase', label: 'At least one lowercase letter', check: (pwd: string) => /[a-z]/.test(pwd) },
+  { id: 'number', label: 'At least one number', check: (pwd: string) => /\d/.test(pwd) },
+  { id: 'special', label: 'At least one special character', check: (pwd: string) => /[@$!%*?&]/.test(pwd) },
+];
 
 export default function SellerProfile() {
   const { toast } = useToast();
@@ -43,26 +100,129 @@ export default function SellerProfile() {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  
+  // Validation states
+  const [phoneValid, setPhoneValid] = useState<boolean | null>(null);
+  const [gstValid, setGstValid] = useState<boolean | null>(null);
+  const [zipCodeValid, setZipCodeValid] = useState<boolean | null>(null);
 
-  const { data: profile, isLoading, isError } = useQuery({
-    queryKey: ["/api/seller/profile"],
-    onSuccess: (data) => {
-      setBusinessName(data.businessName || "");
-      setEmail(data.email || "");
-      setPhone(data.phone || "");
-      setBusinessAddress(data.businessAddress || "");
-      setWarehouseAddress(data.warehouseAddress || "");
-      setZipCode(data.zipCode || "");
-      setGst(data.gst || "");
-    }
+  const { data: profile, isLoading, isError } = useQuery<SellerProfile>({
+    queryKey: ["/api/seller/profile"]
   });
+  
+  // Set form data when profile is loaded
+  React.useEffect(() => {
+    if (profile) {
+      setBusinessName(profile.businessName || "");
+      setEmail(profile.email || "");
+      setPhone(profile.phone || "");
+      setBusinessAddress(profile.businessAddress || "");
+      setWarehouseAddress(profile.warehouseAddress || "");
+      setZipCode(profile.zipCode || "");
+      setGst(profile.gst || "");
+      
+      // Validate initial values
+      if (profile.phone) setPhoneValid(isValidPhoneNumber(profile.phone));
+      if (profile.gst) setGstValid(isValidGST(profile.gst));
+      if (profile.zipCode) setZipCodeValid(isValidZipCode(profile.zipCode));
+    }
+  }, [profile]);
+
+  // Validation handlers
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setPhone(value);
+    
+    if (value && value.length > 0) {
+      setPhoneValid(isValidPhoneNumber(value));
+    } else {
+      setPhoneValid(null);
+    }
+  };
+
+  const handleGSTChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.toUpperCase(); // Auto-convert to uppercase
+    setGst(value);
+    
+    if (value && value.length > 0) {
+      setGstValid(isValidGST(value));
+    } else {
+      setGstValid(null);
+    }
+  };
+
+  const handleZipCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setZipCode(value);
+    
+    if (value && value.length > 0) {
+      setZipCodeValid(isValidZipCode(value));
+    } else {
+      setZipCodeValid(null);
+    }
+  };
+
+  // Check password criteria
+  const [passwordCriteriaChecked, setPasswordCriteriaChecked] = useState<Record<string, boolean>>({});
+  
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setNewPassword(value);
+    
+    const newChecks: Record<string, boolean> = {};
+    passwordCriteria.forEach(criterion => {
+      newChecks[criterion.id] = criterion.check(value);
+    });
+    setPasswordCriteriaChecked(newChecks);
+  };
 
   const handleSaveProfile = async () => {
+    // Required field validation
     if (!businessName) {
       toast({
         variant: "destructive",
         title: "Validation error",
         description: "Business name is required",
+      });
+      return;
+    }
+
+    // Phone validation
+    if (phone && !isValidPhoneNumber(phone)) {
+      toast({
+        variant: "destructive",
+        title: "Invalid phone number",
+        description: "Please enter a valid Indian phone number",
+      });
+      return;
+    }
+
+    // GST validation
+    if (gst && !isValidGST(gst)) {
+      toast({
+        variant: "destructive",
+        title: "Invalid GST number",
+        description: "Please enter a valid GST number (e.g., 22AAAAA0000A1Z5)",
+      });
+      return;
+    }
+
+    // ZIP code validation
+    if (zipCode && !isValidZipCode(zipCode)) {
+      toast({
+        variant: "destructive",
+        title: "Invalid ZIP code",
+        description: "Please enter a valid 6-digit Indian ZIP code",
+      });
+      return;
+    }
+
+    // Password validation
+    if (newPassword && !isStrongPassword(newPassword)) {
+      toast({
+        variant: "destructive",
+        title: "Weak password",
+        description: "Password doesn't meet the security requirements",
       });
       return;
     }
@@ -181,27 +341,63 @@ export default function SellerProfile() {
                 <Label htmlFor="phone" className="flex items-center">
                   <Phone className="h-4 w-4 mr-2" />
                   Phone Number
+                  {phoneValid !== null && (
+                    phoneValid ? 
+                      <CheckCircle2 className="h-4 w-4 ml-2 text-green-500" /> : 
+                      <XCircle className="h-4 w-4 ml-2 text-red-500" />
+                  )}
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="h-4 w-4 ml-1 text-muted-foreground cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Format: +91 XXXXXXXXXX or 10 digits starting with 6-9</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </Label>
                 <Input
                   id="phone"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={handlePhoneChange}
                   placeholder="+91 9876543210"
-                  className="mt-1"
+                  className={`mt-1 ${phoneValid === false ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
                 />
+                {phoneValid === false && (
+                  <p className="text-sm text-red-500 mt-1">Please enter a valid Indian phone number</p>
+                )}
               </div>
               <div>
                 <Label htmlFor="gst" className="flex items-center">
                   <FileText className="h-4 w-4 mr-2" />
                   GST Number
+                  {gstValid !== null && (
+                    gstValid ? 
+                      <CheckCircle2 className="h-4 w-4 ml-2 text-green-500" /> : 
+                      <XCircle className="h-4 w-4 ml-2 text-red-500" />
+                  )}
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="h-4 w-4 ml-1 text-muted-foreground cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Format: 22AAAAA0000A1Z5 (15 characters)</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </Label>
                 <Input
                   id="gst"
                   value={gst}
-                  onChange={(e) => setGst(e.target.value)}
+                  onChange={handleGSTChange}
                   placeholder="22AAAAA0000A1Z5"
-                  className="mt-1"
+                  className={`mt-1 ${gstValid === false ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
                 />
+                {gstValid === false && (
+                  <p className="text-sm text-red-500 mt-1">Please enter a valid GST number</p>
+                )}
               </div>
               <div>
                 <Label htmlFor="businessAddress" className="flex items-center">
@@ -235,14 +431,32 @@ export default function SellerProfile() {
                 <Label htmlFor="zipCode" className="flex items-center">
                   <MapPin className="h-4 w-4 mr-2" />
                   Zip Code
+                  {zipCodeValid !== null && (
+                    zipCodeValid ? 
+                      <CheckCircle2 className="h-4 w-4 ml-2 text-green-500" /> : 
+                      <XCircle className="h-4 w-4 ml-2 text-red-500" />
+                  )}
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="h-4 w-4 ml-1 text-muted-foreground cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Enter a valid 6-digit Indian PIN code</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </Label>
                 <Input
                   id="zipCode"
                   value={zipCode}
-                  onChange={(e) => setZipCode(e.target.value)}
+                  onChange={handleZipCodeChange}
                   placeholder="400001"
-                  className="mt-1"
+                  className={`mt-1 ${zipCodeValid === false ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
                 />
+                {zipCodeValid === false && (
+                  <p className="text-sm text-red-500 mt-1">Please enter a valid 6-digit PIN code</p>
+                )}
               </div>
             </div>
 
