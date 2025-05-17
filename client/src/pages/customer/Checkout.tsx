@@ -14,11 +14,16 @@ import { apiRequest } from "@/lib/queryClient";
 import { Separator } from "@/components/ui/separator";
 
 const checkoutSchema = z.object({
-  shippingAddress: z.string().min(10, { message: "Shipping address must be at least 10 characters" }),
-  city: z.string().min(2, { message: "City is required" }),
-  state: z.string().min(2, { message: "State is required" }),
-  country: z.string().min(2, { message: "Country is required" }),
-  zipCode: z.string().regex(/^\d{5,6}$/, { message: "Zip code must be 5-6 digits" }),
+  shippingAddress: z.string().min(10, { message: "Shipping address must be at least 10 characters" })
+    .max(200, { message: "Address too long, please be more concise" }),
+  city: z.string().min(2, { message: "City is required" })
+    .max(50, { message: "City name too long" }),
+  state: z.string().min(2, { message: "State is required" })
+    .max(50, { message: "State name too long" }),
+  country: z.string().min(2, { message: "Country is required" })
+    .max(50, { message: "Country name too long" }),
+  zipCode: z.string()
+    .regex(/^[0-9]{4,10}$/, { message: "Zip/Postal code must be 4-10 digits to support international formats" }),
   paymentMethod: z.string().min(1, { message: "Payment method is required" }),
 });
 
@@ -134,16 +139,29 @@ export default function CustomerCheckout() {
     // Create full address string from form fields
     const fullAddress = `${data.shippingAddress}, ${data.city}, ${data.state}, ${data.zipCode}, ${data.country}`;
     
-    // Prepare order data with the complete address
+    // Prepare order data with the complete address and total amount
     const orderData = {
       address: fullAddress,
+      total: cartTotal, // Include the total amount explicitly
+      paymentMethod: data.paymentMethod,
       items: cartItems.map(item => ({
-        productId: item.productId,
+        productId: item.productId || item.id,
         quantity: item.quantity,
         price: item.price, // Include price to ensure correct calculation
-        message: item.message
+        name: item.name,
+        sellerId: item.sellerId
       }))
     };
+
+    // Verify total matches calculated amount before submission
+    if (orderData.total <= 0 || isNaN(orderData.total)) {
+      toast({
+        title: "Order Error",
+        description: "There was an issue with your order total. Please try again.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     createOrderMutation.mutate(orderData);
   };
