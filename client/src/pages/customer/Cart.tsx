@@ -180,7 +180,7 @@ export default function Cart() {
   };
   
   const subtotal = calculateSubtotal();
-  const shipping = subtotal > 1000 ? 0 : 100;
+  const shipping = 150; // Fixed shipping rate of ₹150 for all orders
   const total = subtotal + shipping;
 
   if (isLoading) {
@@ -360,7 +360,7 @@ export default function Cart() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Shipping</span>
-                      <span className="font-medium">{shipping === 0 ? "Free" : formatCurrency(shipping)}</span>
+                      <span className="font-medium">{formatCurrency(shipping)}</span>
                     </div>
                     <div className="border-t pt-3 mt-3 flex justify-between">
                       <span className="font-bold">Total</span>
@@ -376,7 +376,7 @@ export default function Cart() {
                     </Button>
                     
                     <p className="text-xs text-gray-500 mt-4 text-center">
-                      Free shipping on orders above ₹1,000
+                      Standard shipping rate of ₹150 applies to all orders
                     </p>
                   </div>
                 </CardContent>
