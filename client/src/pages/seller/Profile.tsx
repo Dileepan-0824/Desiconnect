@@ -479,15 +479,52 @@ export default function SellerProfile() {
                 </div>
                 <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <Label htmlFor="newPassword">New Password</Label>
+                    <Label htmlFor="newPassword" className="flex items-center">
+                      New Password
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Info className="h-4 w-4 ml-1 text-muted-foreground cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent className="w-80">
+                            <p className="text-sm">Password must contain:</p>
+                            <ul className="text-xs list-disc pl-4 mt-1">
+                              <li>At least 8 characters</li>
+                              <li>At least one uppercase letter (A-Z)</li>
+                              <li>At least one lowercase letter (a-z)</li>
+                              <li>At least one number (0-9)</li>
+                              <li>At least one special character (!@#$...)</li>
+                            </ul>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </Label>
                     <Input
                       id="newPassword"
                       type="password"
                       value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
+                      onChange={handlePasswordChange}
                       placeholder="••••••••"
                       className="mt-1"
                     />
+                    
+                    {/* Password strength indicator */}
+                    {newPassword && (
+                      <div className="mt-2 space-y-1">
+                        {passwordCriteria.map((criterion) => (
+                          <div key={criterion.id} className="flex items-center text-xs">
+                            {passwordCriteriaChecked[criterion.id] ? (
+                              <CheckCircle2 className="h-3 w-3 mr-2 text-green-500" />
+                            ) : (
+                              <XCircle className="h-3 w-3 mr-2 text-red-500" />
+                            )}
+                            <span className={passwordCriteriaChecked[criterion.id] ? 'text-green-600' : 'text-red-500'}>
+                              {criterion.label}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   <div>
                     <Label htmlFor="confirmPassword">Confirm New Password</Label>
@@ -497,8 +534,17 @@ export default function SellerProfile() {
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="••••••••"
-                      className="mt-1"
+                      className={`mt-1 ${newPassword && confirmPassword && newPassword !== confirmPassword ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
                     />
+                    {newPassword && confirmPassword && newPassword !== confirmPassword && (
+                      <p className="text-sm text-red-500 mt-1">Passwords do not match</p>
+                    )}
+                    {newPassword && confirmPassword && newPassword === confirmPassword && (
+                      <div className="flex items-center mt-1 text-green-600 text-sm">
+                        <CheckCircle2 className="h-3 w-3 mr-1" />
+                        <span>Passwords match</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
