@@ -14,10 +14,11 @@ import { apiRequest } from "@/lib/queryClient";
 import { Separator } from "@/components/ui/separator";
 
 const checkoutSchema = z.object({
-  shippingAddress: z.string().min(5, { message: "Shipping address is required" }),
+  shippingAddress: z.string().min(10, { message: "Shipping address must be at least 10 characters" }),
   city: z.string().min(2, { message: "City is required" }),
   state: z.string().min(2, { message: "State is required" }),
-  zipCode: z.string().min(5, { message: "Valid zip code is required" }),
+  country: z.string().min(2, { message: "Country is required" }),
+  zipCode: z.string().regex(/^\d{5,6}$/, { message: "Zip code must be 5-6 digits" }),
   paymentMethod: z.string().min(1, { message: "Payment method is required" }),
 });
 
@@ -36,6 +37,7 @@ export default function CustomerCheckout() {
       shippingAddress: "",
       city: "",
       state: "",
+      country: "",
       zipCode: "",
       paymentMethod: "cash_on_delivery", // Default payment method
     },
@@ -52,12 +54,17 @@ export default function CustomerCheckout() {
       const items = Array.isArray(cartData.items) ? cartData.items : [];
       setCartItems(items);
       
-      // Calculate total
+      // Calculate total with better handling for price values
       const total = items.reduce(
-        (sum: number, item: any) => sum + (parseFloat(item.price || '0') * item.quantity),
+        (sum: number, item: any) => {
+          const price = typeof item.price === 'string' ? parseFloat(item.price) : 
+                       typeof item.price === 'number' ? item.price : 0;
+          const qty = item.quantity || 0;
+          return sum + (price * qty);
+        },
         0
       );
-      setCartTotal(total);
+      setCartTotal(total || 0); // Ensure total is never NaN
     }
   }, [cartData]);
 
@@ -114,7 +121,7 @@ export default function CustomerCheckout() {
     }
 
     // Create full address string from form fields
-    const fullAddress = `${data.shippingAddress}, ${data.city}, ${data.state} ${data.zipCode}`;
+    const fullAddress = `${data.shippingAddress}, ${data.city}, ${data.state}, ${data.zipCode}, ${data.country}`;
     
     // Prepare order data with the complete address
     const orderData = {
@@ -122,6 +129,7 @@ export default function CustomerCheckout() {
       items: cartItems.map(item => ({
         productId: item.productId,
         quantity: item.quantity,
+        price: item.price, // Include price to ensure correct calculation
         message: item.message
       }))
     };
@@ -174,15 +182,15 @@ export default function CustomerCheckout() {
                     )}
                   />
                   
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
-                      name="city"
+                      name="country"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>City</FormLabel>
+                          <FormLabel>Country*</FormLabel>
                           <FormControl>
-                            <Input placeholder="City" {...field} />
+                            <Input placeholder="Country" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -191,10 +199,26 @@ export default function CustomerCheckout() {
                     
                     <FormField
                       control={form.control}
+                      name="city"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>City*</FormLabel>
+                          <FormControl>
+                            <Input placeholder="City" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
                       name="state"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>State</FormLabel>
+                          <FormLabel>State*</FormLabel>
                           <FormControl>
                             <Input placeholder="State" {...field} />
                           </FormControl>
@@ -208,9 +232,9 @@ export default function CustomerCheckout() {
                       name="zipCode"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Zip Code</FormLabel>
+                          <FormLabel>Zip Code*</FormLabel>
                           <FormControl>
-                            <Input placeholder="Zip Code" {...field} />
+                            <Input placeholder="Zip Code (5-6 digits)" type="text" inputMode="numeric" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

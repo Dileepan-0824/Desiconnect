@@ -157,7 +157,7 @@ export default function CustomerOrders() {
         return (
           <div className="flex items-center">
             <Package className="h-4 w-4 mr-1 text-yellow-600" />
-            <Badge variant="outline" className="bg-yellow-100 text-yellow-800">Processing</Badge>
+            <Badge variant="outline" className="bg-yellow-100 text-yellow-800">Placed</Badge>
           </div>
         );
       case "ready":
@@ -171,7 +171,7 @@ export default function CustomerOrders() {
         return (
           <div className="flex items-center">
             <CheckCircle className="h-4 w-4 mr-1 text-green-600" />
-            <Badge variant="outline" className="bg-green-100 text-green-800">Delivered</Badge>
+            <Badge variant="outline" className="bg-green-100 text-green-800">Fulfilled</Badge>
           </div>
         );
       default:
@@ -198,6 +198,7 @@ export default function CustomerOrders() {
                   <TableHead>Product</TableHead>
                   <TableHead>Date</TableHead>
                   <TableHead>Amount</TableHead>
+                  <TableHead>Status</TableHead>
                   <TableHead>Tracking ID</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
