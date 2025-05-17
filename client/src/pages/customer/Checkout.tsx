@@ -53,7 +53,7 @@ export default function CustomerCheckout() {
   const { user, token } = useAuth();
   const [, navigate] = useLocation();
   const { toast } = useToast();
-  const [cartItems, setCartItems] = useState<any[]>([]);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [cartTotal, setCartTotal] = useState(0);
 
   const form = useForm<CheckoutForm>({
@@ -255,7 +255,25 @@ export default function CustomerCheckout() {
                         <FormItem>
                           <FormLabel>Country*</FormLabel>
                           <FormControl>
-                            <Input placeholder="Country" {...field} />
+                            <select 
+                              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                              {...field}
+                            >
+                              <option value="">Select your country</option>
+                              <option value="India">India</option>
+                              <option value="United States">United States</option>
+                              <option value="United Kingdom">United Kingdom</option>
+                              <option value="Canada">Canada</option>
+                              <option value="Australia">Australia</option>
+                              <option value="Singapore">Singapore</option>
+                              <option value="United Arab Emirates">United Arab Emirates</option>
+                              <option value="Saudi Arabia">Saudi Arabia</option>
+                              <option value="Germany">Germany</option>
+                              <option value="France">France</option>
+                              <option value="Japan">Japan</option>
+                              <option value="Malaysia">Malaysia</option>
+                              <option value="Other">Other</option>
+                            </select>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -393,14 +411,14 @@ export default function CustomerCheckout() {
                 
                 <div className="flex justify-between text-sm">
                   <p>Shipping</p>
-                  <p>₹0.00</p>
+                  <p>₹{cartItems.length > 0 ? '150.00' : '0.00'}</p>
                 </div>
                 
                 <Separator />
                 
                 <div className="flex justify-between font-bold">
                   <p>Total</p>
-                  <p>₹{cartTotal > 0 ? cartTotal.toFixed(2) : '0.00'}</p>
+                  <p>₹{cartItems.length > 0 ? (cartTotal + 150).toFixed(2) : '0.00'}</p>
                 </div>
               </div>
             </CardContent>
