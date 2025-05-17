@@ -109,17 +109,23 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       </div>
       
       <div className="mt-auto px-3 py-4">
-        <Button 
-          variant="ghost" 
-          className={cn(
-            "w-full flex items-center rounded-md px-3 py-2 text-sm font-medium text-destructive hover:bg-destructive/10",
-            collapsed ? "justify-center" : "justify-start"
-          )}
-          onClick={() => logout()}
-        >
-          <LogOut className="h-5 w-5" />
-          {!collapsed && <span className="ml-3">Log Out</span>}
-        </Button>
+        <Link href="/login">
+          <Button 
+            variant="ghost" 
+            className={cn(
+              "w-full flex items-center rounded-md px-3 py-2 text-sm font-medium text-destructive hover:bg-destructive/10",
+              collapsed ? "justify-center" : "justify-start"
+            )}
+            onClick={(e) => {
+              e.preventDefault();
+              logout();
+              window.location.href = "/login";
+            }}
+          >
+            <LogOut className="h-5 w-5" />
+            {!collapsed && <span className="ml-3">Log Out</span>}
+          </Button>
+        </Link>
       </div>
       
       {!collapsed && (
