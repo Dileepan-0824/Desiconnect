@@ -293,7 +293,7 @@ export default function AdminOrders() {
                             ? format(new Date(order.createdAt), 'MMM dd, yyyy') 
                             : 'N/A'}
                         </TableCell>
-                        <TableCell>₹{order.totalPrice || order.total_price || '0.00'}</TableCell>
+                        <TableCell>₹{parseFloat(String(order.totalPrice)).toFixed(2) || '0.00'}</TableCell>
                         <TableCell>{order.seller?.businessName || "Unknown"}</TableCell>
                         <TableCell>
                           <Button 
@@ -471,7 +471,7 @@ export default function AdminOrders() {
                     </div>
                     <div className="flex justify-between mb-2">
                       <p className="text-sm text-muted-foreground">Total Amount:</p>
-                      <p className="font-medium">₹{selectedOrder.totalAmount?.toFixed(2) || '0.00'}</p>
+                      <p className="font-medium">₹{selectedOrder.totalPrice || selectedOrder.total_price || '0.00'}</p>
                     </div>
                     {selectedOrder.trackingNumber && (
                       <div className="flex justify-between mb-2">

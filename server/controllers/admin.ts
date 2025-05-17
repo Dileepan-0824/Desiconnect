@@ -288,8 +288,8 @@ export const getOrdersByStatus = async (req: Request, res: Response) => {
           ...order,
           productName: product?.name || 'Unknown Product',
           sellerBusinessName: seller?.businessName || 'Unknown Seller',
-          // Map database total_price to totalPrice for consistent frontend access
-          totalPrice: order.total_price
+          // Map database field to totalPrice for consistent frontend access
+          totalPrice: order.totalPrice
         };
       })
     );
