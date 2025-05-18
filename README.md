@@ -2,9 +2,9 @@
 
 DesiConnect is a full-stack e-commerce platform designed to connect Indian sellers with customers globally. The platform provides a comprehensive solution for online selling and buying experiences with a multi-portal management system.
 
-![DesiConnect Logo](./client/src/assets/Desi%20Connect%20Logo.png)
 
-## 🌟 Features
+
+##  Features
 
 - **Three Distinct Portals**: 
   - **Admin Portal**: Comprehensive management tools for platform operations
@@ -15,14 +15,14 @@ DesiConnect is a full-stack e-commerce platform designed to connect Indian selle
 - **Product Management**: Complete lifecycle with admin approval workflow
 - **Order Processing**: Detailed tracking and status management
 
-## 💻 Tech Stack
+##  Tech Stack
 
 - **Frontend**: React with TypeScript, TailwindCSS, Shadcn UI components
 - **Backend**: Express.js with TypeScript
 - **Database**: PostgreSQL with Drizzle ORM
 - **Authentication**: JWT-based auth with role-based access control
 
-## 🚀 Getting Started
+##  Getting Started
 
 ### Prerequisites
 
@@ -61,7 +61,7 @@ DesiConnect is a full-stack e-commerce platform designed to connect Indian selle
 
 6. The application will be available at `http://localhost:5000`
 
-## 🏗️ Project Structure
+##  Project Structure
 
 ```
 desiconnect/
@@ -80,7 +80,7 @@ desiconnect/
     └── schema.ts        # Database schema with Drizzle ORM
 ```
 
-## 🔐 Default Credentials
+##  Default Credentials
 
 - **Admin**:
   - Email: admin@desiconnect.com
@@ -90,14 +90,14 @@ desiconnect/
   - Email: customer@desiconnect.com
   - Password: Customer@123
 
-## 🌐 Deployment
+##  Deployment
 
 This application can be deployed on any platform that supports Node.js applications with PostgreSQL databases.
 
-## 📝 License
+##  License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## 🙏 Acknowledgements
+##  Acknowledgements
 
 - **"Local roots, global shelves"** - Connecting local Indian businesses with global markets
