@@ -82,10 +82,6 @@ desiconnect/
 
 ##  Default Credentials
 
-- **Admin**:
-  - Email: admin@desiconnect.com
-  - Password: Admin@123
-
 - **Customer**:
   - Email: customer@desiconnect.com
   - Password: Customer@123
