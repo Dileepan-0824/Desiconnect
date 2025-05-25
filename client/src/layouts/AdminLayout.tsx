@@ -1,16 +1,16 @@
 import { ReactNode, useState } from "react";
 import { Link, useLocation } from "wouter";
-import { 
-  LayoutDashboard, 
-  ShoppingBag, 
-  Users, 
+import {
+  LayoutDashboard,
+  ShoppingBag,
+  Users,
   Package,
   Settings,
   ChevronLeft,
   ChevronRight,
   LogOut,
   Menu,
-  X
+  X,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
@@ -26,24 +26,22 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [location] = useLocation();
-  const { user, logout } = useAuth();
+  const { user, logout, loading } = useAuth(); // Make sure `useAuth` provides `loading`
 
-  if (!user) {
-  if (typeof window !== "undefined") {
-    window.location.href = "/admin/login"; // Force redirect if not logged in
+  // While auth is loading, don't render anything
+  if (loading) return null;
+
+  // If user is not logged in or not admin, redirect
+  if (!user || user.role !== "admin") {
+    if (typeof window !== "undefined") {
+      window.location.href = "/admin/login";
+    }
+    return null;
   }
-  return null; // Prevent rendering layout
-}
 
-  
-  const toggleSidebar = () => {
-    setCollapsed(!collapsed);
-  };
-  
-  const toggleMobileSidebar = () => {
-    setMobileOpen(!mobileOpen);
-  };
-  
+  const toggleSidebar = () => setCollapsed(!collapsed);
+  const toggleMobileSidebar = () => setMobileOpen(!mobileOpen);
+
   const sidebarLinks = [
     {
       name: "Dashboard",
@@ -71,7 +69,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       href: "/admin/settings",
     },
   ];
-  
+
   const renderSidebarContent = () => (
     <>
       <div className="flex items-center justify-between px-4 pt-5 pb-2">
@@ -81,45 +79,37 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             <p className="text-xs ml-2 text-muted-foreground">Admin</p>
           </div>
         )}
-        
-        <Button 
-          variant="ghost" 
-          size="icon"
-          className="hidden md:flex" 
-          onClick={toggleSidebar}
-        >
+
+        <Button variant="ghost" size="icon" className="hidden md:flex" onClick={toggleSidebar}>
           {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
         </Button>
-        
-        <Button
-          variant="ghost"
-          size="icon"
-          className="md:hidden"
-          onClick={toggleMobileSidebar}
-        >
+
+        <Button variant="ghost" size="icon" className="md:hidden" onClick={toggleMobileSidebar}>
           <X className="h-4 w-4" />
         </Button>
       </div>
-      
+
       <div className="mt-5 px-3">
         {sidebarLinks.map((link) => (
           <Link key={link.href} href={link.href}>
-            <a className={cn(
-              "flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
-              location === link.href ? "bg-accent" : "transparent",
-              collapsed ? "justify-center" : "justify-start"
-            )}>
+            <a
+              className={cn(
+                "flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
+                location === link.href ? "bg-accent" : "transparent",
+                collapsed ? "justify-center" : "justify-start"
+              )}
+            >
               {link.icon}
               {!collapsed && <span className="ml-3">{link.name}</span>}
             </a>
           </Link>
         ))}
       </div>
-      
+
       <div className="mt-auto px-3 py-4">
         <Link href="/login">
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             className={cn(
               "w-full flex items-center rounded-md px-3 py-2 text-sm font-medium text-destructive hover:bg-destructive/10",
               collapsed ? "justify-center" : "justify-start"
@@ -135,7 +125,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           </Button>
         </Link>
       </div>
-      
+
       {!collapsed && (
         <div className="border-t pt-4 px-3">
           <div className="flex items-center">
@@ -158,16 +148,16 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     <div className="h-screen flex overflow-hidden bg-background">
       {/* Mobile sidebar backdrop */}
       {mobileOpen && (
-        <div 
+        <div
           className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm md:hidden"
           onClick={toggleMobileSidebar}
         />
       )}
-      
+
       {/* Mobile sidebar menu button */}
       <div className="md:hidden fixed top-4 left-4 z-50">
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           size="icon"
           onClick={toggleMobileSidebar}
           className={cn(mobileOpen ? "hidden" : "flex")}
@@ -175,28 +165,30 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           <Menu className="h-4 w-4" />
         </Button>
       </div>
-      
+
       {/* Sidebar for mobile */}
-      <div className={cn(
-        "fixed inset-y-0 left-0 z-50 w-64 transform transition-transform ease-in-out duration-300 bg-background border-r md:hidden",
-        mobileOpen ? "translate-x-0" : "-translate-x-full"
-      )}>
+      <div
+        className={cn(
+          "fixed inset-y-0 left-0 z-50 w-64 transform transition-transform ease-in-out duration-300 bg-background border-r md:hidden",
+          mobileOpen ? "translate-x-0" : "-translate-x-full"
+        )}
+      >
         {renderSidebarContent()}
       </div>
-      
+
       {/* Sidebar for desktop */}
-      <div className={cn(
-        "hidden md:flex flex-col h-screen bg-background border-r transition-all",
-        collapsed ? "w-16" : "w-64"
-      )}>
+      <div
+        className={cn(
+          "hidden md:flex flex-col h-screen bg-background border-r transition-all",
+          collapsed ? "w-16" : "w-64"
+        )}
+      >
         {renderSidebarContent()}
       </div>
-      
+
       {/* Main content */}
       <div className="flex-1 overflow-auto">
-        <div className="md:px-8 px-4 py-6">
-          {children}
-        </div>
+        <div className="md:px-8 px-4 py-6">{children}</div>
       </div>
     </div>
   );
