@@ -27,6 +27,14 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [location] = useLocation();
   const { user, logout } = useAuth();
+
+  if (!user) {
+  if (typeof window !== "undefined") {
+    window.location.href = "/admin/login"; // Force redirect if not logged in
+  }
+  return null; // Prevent rendering layout
+}
+
   
   const toggleSidebar = () => {
     setCollapsed(!collapsed);
