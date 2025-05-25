@@ -26,33 +26,29 @@ export const generateToken = (payload: JwtPayload): string => {
   return jwt.sign(payload, JWT_SECRET, { expiresIn: '24h' });
 };
 
+// Verify token utility (can be used outside Express middleware if needed)
+export const verifyToken = (token: string): JwtPayload => {
+  return jwt.verify(token, JWT_SECRET) as JwtPayload;
+};
+
 // Authentication middleware to verify JWT token
 export const authenticate = (req: Request, res: Response, next: NextFunction) => {
   try {
-    // Check for authorization header
     const authHeader = req.headers.authorization;
-    
     if (!authHeader) {
       return res.status(401).json({ message: 'Authentication required' });
     }
-    
-    // Format should be 'Bearer [token]'
+
     const parts = authHeader.split(' ');
     if (parts.length !== 2 || parts[0] !== 'Bearer') {
       return res.status(401).json({ message: 'Authentication format invalid' });
     }
-    
+
     const token = parts[1];
-    
-    // Verify the token
-    const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
-    
-    // Attach user payload to request object
+    const decoded = verifyToken(token);
     req.user = decoded;
-    
-    // Log successful authentication for debugging
+
     console.log(`Authenticated user: ${decoded.email} (${decoded.role})`);
-    
     next();
   } catch (error) {
     console.error('Authentication error:', error);
@@ -84,7 +80,7 @@ export const authorizeCustomer = (req: Request, res: Response, next: NextFunctio
   next();
 };
 
-// Verify seller ownership of products and orders
+// Middleware to verify seller owns a product/order
 export const verifySellerOwnership = async (req: Request, res: Response, next: NextFunction) => {
   if (!req.user || req.user.role !== 'seller') {
     return res.status(403).json({ message: 'Access denied' });
@@ -111,7 +107,7 @@ export const verifySellerOwnership = async (req: Request, res: Response, next: N
   }
 };
 
-// Verify customer ownership of orders
+// Middleware to verify customer owns an order
 export const verifyCustomerOwnership = async (req: Request, res: Response, next: NextFunction) => {
   if (!req.user || req.user.role !== 'customer') {
     return res.status(403).json({ message: 'Access denied' });
@@ -128,4 +124,12 @@ export const verifyCustomerOwnership = async (req: Request, res: Response, next:
   } catch (error) {
     return res.status(500).json({ message: 'Server error while verifying ownership' });
   }
+};
+
+// Optional: Log user requests (helpful in debugging or auditing)
+export const logRequestUser = (req: Request, _res: Response, next: NextFunction) => {
+  if (req.user) {
+    console.log(`[${new Date().toISOString()}] ${req.user.role.toUpperCase()} ${req.user.email} accessed ${req.method} ${req.originalUrl}`);
+  }
+  next();
 };
